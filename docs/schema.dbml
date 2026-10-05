@@ -1,0 +1,645 @@
+// TrainFuel: Workout & Nutrition Tracker
+// Train. Track. See your progress.
+// Logical ERD conversion, 27 tables. Website first; React Native later.
+// Import as DBML in drawDB; select PostgreSQL.
+// IMPORTANT: this file is for diagramming, not a complete deployable migration.
+// DBML has no portable partial-unique-index syntax. Active uniqueness is recorded
+// in index notes/comments, as ordinary diagram indexes. Add partial UNIQUE indexes
+// WHERE deleted_at IS NULL in PostgreSQL migrations, plus CHECKs/triggers noted below.
+
+Project TrainFuel {
+  database_type: 'PostgreSQL'
+  Note: 'Website-first workout and manual nutrition tracker. Partial uniqueness, authorization, CHECK rules and media lifecycle require implementation migrations/backend validation.'
+}
+
+Enum goal_type {
+  cutting
+  bulking
+}
+
+Enum weight_unit_type {
+  kg
+  lb
+}
+
+Enum auth_provider {
+  google
+}
+
+Enum reminder_category {
+  food
+  exercise
+  weight
+  weekly_photos
+}
+
+Enum exercise_visibility {
+  shared
+  private
+}
+
+Enum muscle_role {
+  primary
+  secondary
+}
+
+Enum asset_visibility {
+  public
+  private
+}
+
+Enum asset_status {
+  processing
+  ready
+  deleted
+}
+
+Enum record_kind {
+  performed
+  reference
+}
+
+Enum food_status {
+  draft
+  complete
+}
+
+Enum upload_purpose {
+  exercise
+  progress
+}
+
+Enum upload_status {
+  pending
+  finalized
+  failed
+}
+
+Enum platform_type {
+  web
+  android
+  ios
+}
+
+Enum sync_action {
+  create
+  update
+  delete
+}
+
+Enum sync_status {
+  accepted
+  conflict
+  rejected
+}
+
+Enum change_action {
+  upsert
+  delete
+}
+
+Enum change_scope {
+  owner
+  catalog
+}
+
+Table user {
+  id uuid [pk, not null]
+  email text [not null, unique]
+  password_hash text [null]
+  is_active boolean [not null, default: true]
+  is_catalog_admin boolean [not null, default: false]
+  email_verified_at timestamptz [null]
+  created_at timestamptz [not null, default: `now()`]
+
+  Note: 'Account deletion is an explicit cleanup workflow. Store only password hashes; Google-only accounts may have no password hash. Email uniqueness must be case-insensitive in PostgreSQL or canonicalize email before writes.'
+}
+
+Table profile {
+  user_id uuid [pk, not null]
+  display_name text [not null]
+  timezone text [not null]
+  weight_unit weight_unit_type [not null]
+  language text [not null]
+  goal goal_type [not null]
+  height_cm decimal(12,3) [null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    user_id
+  }
+
+  Note: 'Create with account transactionally. One profile per user. Optional height must be positive.'
+}
+
+Table auth_identity {
+  id uuid [pk, not null]
+  user_id uuid [not null]
+  provider auth_provider [not null]
+  provider_subject text [not null]
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (provider, provider_subject) [unique]
+    user_id
+  }
+
+  Note: 'Verified provider subject identifies an external identity. Do not auto-link by unverified email.'
+}
+
+Table reminder {
+  id uuid [pk, not null]
+  user_id uuid [not null]
+  category reminder_category [not null]
+  local_time time [not null]
+  weekdays "smallint[]" [not null]
+  enabled boolean [not null, default: false]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    user_id
+  }
+
+  Note: 'Weekdays use ISO values 1..7 with no duplicates. Browser reminders are best-effort; native scheduling is a later phase.'
+}
+
+Table exercise {
+  id uuid [pk, not null]
+  owner_id uuid [null]
+  visibility exercise_visibility [not null]
+  category text [not null]
+  equipment text [not null]
+  archived_at timestamptz [null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    owner_id
+  }
+
+  Note: 'CHECK: shared visibility requires owner_id IS NULL; private requires owner_id IS NOT NULL. Shared editing is catalog-admin only. Archive while referenced. Equipment/category are controlled text in MVP.'
+}
+
+Table exercise_text {
+  id uuid [pk, not null]
+  exercise_id uuid [not null]
+  language text [not null]
+  name text [not null]
+  instructions jsonb [not null]
+  technique_notes text [null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    (exercise_id, language) [name: 'ix_exercise_text_1', note: 'REQUIRED SQL: UNIQUE (exercise_id, language) WHERE deleted_at IS NULL; diagram index is not unique']
+  }
+
+  Note: 'instructions is an ordered JSON array. At least one active translation is required for a published exercise.'
+}
+
+Table muscle {
+  id uuid [pk, not null]
+  code text [not null, unique]
+  name_translations jsonb [not null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  Note: ''
+}
+
+Table exercise_muscle {
+  id uuid [pk, not null]
+  exercise_id uuid [not null]
+  muscle_id uuid [not null]
+  role muscle_role [not null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    (exercise_id, muscle_id) [name: 'ix_exercise_muscle_1', note: 'REQUIRED SQL: UNIQUE (exercise_id, muscle_id) WHERE deleted_at IS NULL; diagram index is not unique']
+    muscle_id
+  }
+
+  Note: 'Muscle role is primary or secondary. References to private exercises must respect ownership.'
+}
+
+Table media_asset {
+  id uuid [pk, not null]
+  owner_id uuid [null]
+  visibility asset_visibility [not null]
+  object_key text [not null, unique]
+  thumbnail_key text [null]
+  mime_type text [not null]
+  bytes bigint [not null]
+  status asset_status [not null]
+  source_url text [null]
+  license_attribution text [null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    owner_id
+  }
+
+  Note: 'Storage keys only, not permanent private URLs. CHECK private visibility requires owner. Progress/custom assets match domain owner. Cross-table active attachment exclusivity requires a transaction/trigger. Validate media and strip photo metadata.'
+}
+
+Table exercise_media {
+  id uuid [pk, not null]
+  exercise_id uuid [not null]
+  asset_id uuid [not null]
+  position integer [not null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    asset_id [name: 'ix_exercise_media_1', note: 'REQUIRED SQL: UNIQUE (asset_id) WHERE deleted_at IS NULL; diagram index is not unique']
+    (exercise_id, position) [name: 'ix_exercise_media_2', note: 'REQUIRED SQL: UNIQUE (exercise_id, position) WHERE deleted_at IS NULL; diagram index is not unique']
+  }
+
+  Note: 'Position is positive. Private custom media matches exercise owner; shared media has licensed provenance.'
+}
+
+Table exercise_annotation {
+  id uuid [pk, not null]
+  user_id uuid [not null]
+  exercise_id uuid [not null]
+  tutorial_url text [null]
+  notes text [null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    (user_id, exercise_id) [name: 'ix_exercise_annotation_1', note: 'REQUIRED SQL: UNIQUE (user_id, exercise_id) WHERE deleted_at IS NULL; diagram index is not unique']
+    exercise_id
+  }
+
+  Note: 'Only the owner sees this tutorial URL, even for a shared exercise. At most one active annotation per user/exercise. HTTPS links only.'
+}
+
+Table workout_folder {
+  id uuid [pk, not null]
+  user_id uuid [not null]
+  name text [not null]
+  position integer [not null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    user_id
+  }
+
+  Note: 'Unlimited owned folders. Reorder transactionally. Deleting folders does not delete performance history.'
+}
+
+Table folder_exercise {
+  id uuid [pk, not null]
+  folder_id uuid [not null]
+  exercise_id uuid [not null]
+  position integer [not null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    (folder_id, position) [name: 'ix_folder_exercise_1', note: 'REQUIRED SQL: UNIQUE (folder_id, position) WHERE deleted_at IS NULL; diagram index is not unique']
+    exercise_id
+  }
+
+  Note: 'Repeated selections of the same exercise are allowed. Referenced private exercise must belong to folder owner.'
+}
+
+Table planned_set {
+  id uuid [pk, not null]
+  folder_exercise_id uuid [not null]
+  position integer [not null]
+  weight_kg decimal(12,3) [not null]
+  reps integer [not null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    (folder_exercise_id, position) [name: 'ix_planned_set_1', note: 'REQUIRED SQL: UNIQUE (folder_exercise_id, position) WHERE deleted_at IS NULL; diagram index is not unique']
+  }
+
+  Note: 'Prescriptions are separate from actual records. CHECK weight_kg >= 0, reps > 0, position > 0.'
+}
+
+Table exercise_record {
+  id uuid [pk, not null]
+  user_id uuid [not null]
+  exercise_id uuid [not null]
+  folder_exercise_id uuid [null]
+  local_date date [not null]
+  recorded_at timestamptz [not null]
+  kind record_kind [not null]
+  notes text [null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    user_id
+    exercise_id
+    folder_exercise_id
+    (user_id, exercise_id, local_date)
+  }
+
+  Note: 'No workout-completion workflow. Context is optional and may be removed while preserving records. Private exercise and folder context must match record owner. Finalized record requires at least one set.'
+}
+
+Table recorded_set {
+  id uuid [pk, not null]
+  record_id uuid [not null]
+  position integer [not null]
+  weight_kg decimal(12,3) [not null]
+  reps integer [not null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    (record_id, position) [name: 'ix_recorded_set_1', note: 'REQUIRED SQL: UNIQUE (record_id, position) WHERE deleted_at IS NULL; diagram index is not unique']
+  }
+
+  Note: 'CHECK weight_kg >= 0, reps > 0, position > 0. Parent revision is bumped when child sets are changed.'
+}
+
+Table nutrition_target {
+  id uuid [pk, not null]
+  user_id uuid [not null]
+  effective_date date [not null]
+  goal goal_type [not null]
+  calories_kcal decimal(12,3) [not null]
+  protein_g decimal(12,3) [not null]
+  carbs_g decimal(12,3) [not null]
+  fat_g decimal(12,3) [not null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    (user_id, effective_date) [name: 'ix_nutrition_target_1', note: 'REQUIRED SQL: UNIQUE (user_id, effective_date) WHERE deleted_at IS NULL; diagram index is not unique']
+  }
+
+  Note: 'Nonnegative manually entered targets. Source values never silently overwrite historical daily snapshots.'
+}
+
+Table nutrition_day {
+  id uuid [pk, not null]
+  user_id uuid [not null]
+  source_target_id uuid [null]
+  local_date date [not null]
+  goal_snapshot goal_type [not null]
+  calorie_target decimal(12,3) [null]
+  protein_target decimal(12,3) [null]
+  carb_target decimal(12,3) [null]
+  fat_target decimal(12,3) [null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    (user_id, local_date) [name: 'ix_nutrition_day_1', note: 'REQUIRED SQL: UNIQUE (user_id, local_date) WHERE deleted_at IS NULL; diagram index is not unique']
+    source_target_id
+  }
+
+  Note: 'One active row per user/local_date. Targets are independent editable snapshots. Merge offline day creation preserving food entries. Timezone changes do not move history.'
+}
+
+Table food_entry {
+  id uuid [pk, not null]
+  day_id uuid [not null]
+  name text [not null]
+  portion_g decimal(12,3) [not null]
+  calories_kcal decimal(12,3) [null]
+  protein_g decimal(12,3) [null]
+  carbs_g decimal(12,3) [null]
+  fat_g decimal(12,3) [null]
+  brand_source text [null]
+  notes text [null]
+  status food_status [not null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    day_id
+  }
+
+  Note: 'Values are TOTALS FOR THE EATEN PORTION. No per-100-g multiplication. CHECK portion_g > 0 and known nutrients >= 0. Complete entries require all four nutrient values. Nullable draft values mean unknown. Daily consumed counters are sums of active rows.'
+}
+
+Table weight_entry {
+  id uuid [pk, not null]
+  user_id uuid [not null]
+  local_date date [not null]
+  weight_kg decimal(12,3) [not null]
+  notes text [null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    (user_id, local_date) [name: 'ix_weight_entry_1', note: 'REQUIRED SQL: UNIQUE (user_id, local_date) WHERE deleted_at IS NULL; diagram index is not unique']
+  }
+
+  Note: 'One active measurement per user/date. CHECK weight_kg > 0. Store kg, convert for display.'
+}
+
+Table progress_week {
+  id uuid [pk, not null]
+  user_id uuid [not null]
+  week_start date [not null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    (user_id, week_start) [name: 'ix_progress_week_1', note: 'REQUIRED SQL: UNIQUE (user_id, week_start) WHERE deleted_at IS NULL; diagram index is not unique']
+  }
+
+  Note: 'Week start is stored explicitly, proposed Monday. Changes to timezone do not regroup historical photos.'
+}
+
+Table progress_photo {
+  id uuid [pk, not null]
+  week_id uuid [not null]
+  asset_id uuid [not null]
+  slot smallint [not null, note: 'CHECK 1 <= slot AND slot <= 4; active week/slot uniqueness required']
+  capture_date date [not null]
+  label text [null]
+  notes text [null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    asset_id [name: 'ix_progress_photo_1', note: 'REQUIRED SQL: UNIQUE (asset_id) WHERE deleted_at IS NULL; diagram index is not unique']
+    (week_id, slot) [name: 'ix_progress_photo_2', note: 'REQUIRED SQL: UNIQUE (week_id, slot) WHERE deleted_at IS NULL; diagram index is not unique']
+  }
+
+  Note: 'CHECK slot BETWEEN 1 AND 4 plus active UNIQUE(week_id,slot) enforces max four finalized photos. Allocate/move slots under week lock. Asset is private and belongs to week owner. Pending offline photos remain local until validated/finalized.'
+}
+
+Table media_upload {
+  id uuid [pk, not null]
+  user_id uuid [not null]
+  asset_id uuid [not null, unique]
+  purpose upload_purpose [not null]
+  status upload_status [not null]
+  expires_at timestamptz [not null]
+  error_code text [null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    user_id
+    asset_id
+  }
+
+  Note: 'Upload finalization validates media before attaching it. Cleanup failed/orphaned files. Staged client drafts are not accepted domain records.'
+}
+
+Table sync_device {
+  id uuid [pk, not null]
+  user_id uuid [not null]
+  platform platform_type [not null]
+  last_ack_sequence bigint [not null]
+  last_seen_at timestamptz [not null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  revision bigint [not null, default: 1]
+  deleted_at timestamptz [null]
+
+  indexes {
+    user_id
+  }
+
+  Note: 'Acknowledged cursor advances only after local durable application. Device registration does not substitute for authorization.'
+}
+
+Table sync_operation {
+  id uuid [pk, not null]
+  device_id uuid [not null]
+  idempotency_key uuid [not null, unique]
+  entity_type text [not null]
+  entity_id uuid [not null]
+  action sync_action [not null]
+  base_revision bigint [null]
+  status sync_status [not null]
+  result jsonb [not null]
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (device_id, idempotency_key) [unique]
+  }
+
+  Note: 'Server receipt, not client pending queue. Keep idempotency and conflict results sanitized. Do not log private payloads. Compare base_revision; transactionally write domain mutation/change/receipt.'
+}
+
+Table change_record {
+  sequence bigint [pk, not null, increment]
+  owner_id uuid [null]
+  entity_type text [not null]
+  entity_id uuid [not null]
+  entity_revision bigint [not null]
+  action change_action [not null]
+  scope change_scope [not null]
+  changed_at timestamptz [not null]
+
+  indexes {
+    owner_id
+    (owner_id, sequence)
+    (scope, sequence)
+  }
+
+  Note: 'Append-only global cursor. entity_type/entity_id intentionally have no FK so tombstones survive. CHECK owner scope requires owner; catalog scope requires NULL owner. Filter by account plus catalog; sequence gaps are expected. Old cursors may require full resync.'
+}
+
+Table admin_audit {
+  id uuid [pk, not null]
+  actor_id uuid [not null]
+  entity_type text [not null]
+  entity_id uuid [not null]
+  action text [not null]
+  changed_fields "text[]" [not null]
+  occurred_at timestamptz [not null]
+
+  indexes {
+    actor_id
+  }
+
+  Note: 'Append-only metadata audit; no photos, private notes, nutrients, or signed URLs. Catalog-admin permission does not grant private-log access.'
+}
+
+// Relationships: physical deletes are conservative; soft-delete is the normal flow.
+Ref: user.id - profile.user_id [delete: restrict, update: no action]
+Ref: auth_identity.user_id > user.id [delete: restrict, update: no action]
+Ref: reminder.user_id > user.id [delete: restrict, update: no action]
+Ref: exercise.owner_id > user.id [delete: restrict, update: no action]
+Ref: exercise_text.exercise_id > exercise.id [delete: restrict, update: no action]
+Ref: exercise_muscle.exercise_id > exercise.id [delete: restrict, update: no action]
+Ref: exercise_muscle.muscle_id > muscle.id [delete: restrict, update: no action]
+Ref: media_asset.owner_id > user.id [delete: restrict, update: no action]
+Ref: exercise_media.exercise_id > exercise.id [delete: restrict, update: no action]
+Ref: media_asset.id - exercise_media.asset_id [delete: restrict, update: no action]
+Ref: exercise_annotation.user_id > user.id [delete: restrict, update: no action]
+Ref: exercise_annotation.exercise_id > exercise.id [delete: restrict, update: no action]
+Ref: workout_folder.user_id > user.id [delete: restrict, update: no action]
+Ref: folder_exercise.folder_id > workout_folder.id [delete: restrict, update: no action]
+Ref: folder_exercise.exercise_id > exercise.id [delete: restrict, update: no action]
+Ref: planned_set.folder_exercise_id > folder_exercise.id [delete: restrict, update: no action]
+Ref: exercise_record.user_id > user.id [delete: restrict, update: no action]
+Ref: exercise_record.exercise_id > exercise.id [delete: restrict, update: no action]
+Ref: exercise_record.folder_exercise_id > folder_exercise.id [delete: set null, update: no action]
+Ref: recorded_set.record_id > exercise_record.id [delete: restrict, update: no action]
+Ref: nutrition_target.user_id > user.id [delete: restrict, update: no action]
+Ref: nutrition_day.user_id > user.id [delete: restrict, update: no action]
+Ref: nutrition_day.source_target_id > nutrition_target.id [delete: set null, update: no action]
+Ref: food_entry.day_id > nutrition_day.id [delete: restrict, update: no action]
+Ref: weight_entry.user_id > user.id [delete: restrict, update: no action]
+Ref: progress_week.user_id > user.id [delete: restrict, update: no action]
+Ref: progress_photo.week_id > progress_week.id [delete: restrict, update: no action]
+Ref: media_asset.id - progress_photo.asset_id [delete: restrict, update: no action]
+Ref: media_upload.user_id > user.id [delete: restrict, update: no action]
+Ref: media_asset.id - media_upload.asset_id [delete: restrict, update: no action]
+Ref: sync_device.user_id > user.id [delete: restrict, update: no action]
+Ref: sync_operation.device_id > sync_device.id [delete: restrict, update: no action]
+Ref: change_record.owner_id > user.id [delete: restrict, update: no action]
+Ref: admin_audit.actor_id > user.id [delete: restrict, update: no action]

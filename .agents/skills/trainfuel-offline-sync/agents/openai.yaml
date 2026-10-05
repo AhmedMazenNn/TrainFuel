@@ -1,0 +1,3 @@
+interface:
+  display_name: "TrainFuel Offline Sync"
+  short_description: "Build durable TrainFuel saves, sync, and conflict recovery"

@@ -1,0 +1,3 @@
+interface:
+  display_name: "TrainFuel Backend"
+  short_description: "Build TrainFuel domain APIs and owner authorization"

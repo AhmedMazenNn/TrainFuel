@@ -1,0 +1,3 @@
+interface:
+  display_name: "TrainFuel Data Model"
+  short_description: "Implement TrainFuel PostgreSQL schema and constraints"

@@ -1,0 +1,3 @@
+interface:
+  display_name: "TrainFuel Web"
+  short_description: "Build TrainFuel web UI, localization, and accessibility"
