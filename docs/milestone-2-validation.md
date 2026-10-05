@@ -2,6 +2,8 @@
 
 Implemented on `feature/milestone-2`, based on the Milestone 1 dependency. Isolated worktree `/tmp/trainfuel-milestone-2`, PostgreSQL database `trainfuel_milestone2`, browser/API ports 15173/18000. The shared checkout/database were not changed by this terminal.
 
+Published for review in [draft PR #1](https://github.com/AhmedMazenNn/TrainFuel/pull/1) targeting `dev`; no merge has been performed.
+
 ## Verified on 2026-10-05
 
 - Combined Django/PostgreSQL suite: **38 tests passed** (`accounts config sync media_assets`). Includes concurrent devices racing the same profile revision; receipt retry/body tampering; owner-filtered feed/device ownership; stale/deleted revisions; cursor expiry and monotonic ack; direct profile PATCH feed emission; PostgreSQL CHECK constraints; staged versus finalized media; metadata stripping; expired grants; catalog-admin private-media denial; attachment exclusivity; invalid image cleanup; deletion replay and aged orphan scanning.

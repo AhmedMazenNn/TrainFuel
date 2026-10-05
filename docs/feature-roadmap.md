@@ -26,6 +26,8 @@ Dependencies below are feature IDs. Read each milestone top to bottom as the rec
 
 These capabilities are built before domain features are declared complete. Extend them to each new domain as it is introduced; they are not a promise that future tables already synchronize.
 
+Review: [Milestone 2 draft PR #1](https://github.com/AhmedMazenNn/TrainFuel/pull/1) into `dev`; Milestone 1 is included as a dependency and should be reviewed first. Milestone 2 is published and tested, with integration pending review.
+
 | ID | Branch | Depends on | Deliverable | Status |
 | --- | --- | --- | --- | --- |
 | F04 | `feature/offline-storage` | F01, F03 | Account-partitioned IndexedDB, production cached shell, atomic durable profile saves/queue, client IDs, versioned storage and recovered drafts. Trusted-device established-session policy documented. | Implemented on `feature/milestone-2`; review pending |
