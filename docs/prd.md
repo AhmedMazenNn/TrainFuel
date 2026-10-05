@@ -1,6 +1,6 @@
 # Fitness App — Product Requirements Document
 
-Version: 1.2 · 5 October 2026 · Status: requirements baseline with explicitly marked implementation defaults
+Version: 1.3 · 5 October 2026 · Status: requirements baseline with explicitly marked implementation defaults
 
 ## 1. Vision
 Launch a responsive website first, then add React Native apps for Android and iOS in a later phase that combine exercise guidance, organized workout prescriptions, editable per-set lifting records, manual nutrition tracking, and private body-progress tracking. Users should be able to record information without continuous internet access and synchronize it across devices later.
@@ -11,7 +11,7 @@ The product helps users remember exercise technique and previous weights, unders
 | Area | Requirement |
 |---|---|
 | Platforms | Phase 1: responsive website. Phase 2: React Native Android and iOS apps, added later |
-| Languages | Working assumption: English and Arabic, including RTL; the answer “both” followed a combined platform/language question and needs confirmation |
+| Languages | Confirmed: English and Arabic, including RTL |
 | Authentication | Email/password and Google sign-in |
 | Exercise catalog | Administrator-managed exercises with movement media and instructions |
 | Custom exercises | Private user-created exercises with optional GIF/image uploads |
@@ -176,7 +176,7 @@ Synchronize on reconnect/app foreground and on an explicit Sync action. Backgrou
 Deliver these screens on the responsive website first; adapt them for React Native later.
 Authentication/recovery; onboarding/profile; daily dashboard; exercise catalog/detail; private exercise editor; folder list/editor; per-set record editor/history; food editor; day/weekly nutrition history; weight history/charts; weekly photo gallery/upload/comparison; reminder settings; offline download management; sync/conflict center; account/privacy settings; web administration.
 
-If bilingual scope is confirmed, provide English and Arabic copy, correct RTL layout, locale-aware dates/numbers, consistent units, and accessible charts. Shared exercise names/instructions need language fields and a stated fallback for missing translations; user-entered content stays in the language entered.
+Provide English and Arabic copy, correct RTL layout, locale-aware dates/numbers, consistent units, and accessible charts. Shared exercise names/instructions need language fields and a stated fallback for missing translations; user-entered content stays in the language entered.
 
 ## 8. Logical data model
 | Entity | Purpose / important constraint |
@@ -225,13 +225,13 @@ Keep nutrition and exercise business rules on the server and reproducible locall
 | Photo deleted while another device is offline | Hidden locally; stale reconnect cannot resurrect it |
 | Logout/account switching | Private caches do not appear under another account |
 | Notification permission denied | Other features work; clear reminder capability state |
-| English/Arabic if confirmed | Main journeys usable in both directions/locales |
+| English/Arabic | Main journeys usable in both directions/locales |
 
 Initial release requires core website journeys, browser offline/recovery tests, and responsive layout checks to pass. The later mobile release additionally requires Android/iOS journeys and native-specific tests to pass. Each release requires security/ownership and synchronization tests to pass; private-media handling and backup restoration to be verified; and catalog media rights to be resolved. The PRD defines required tests; it does not claim that software has been built or tested.
 
 ## 12. Delivery plan
 ### Phase 1 — Responsive website and shared backend
-1. Agree web screens, language scope, date/week rules, media limits, and retention defaults.
+1. Agree web screens, date/week rules, media limits, and retention defaults.
 2. Build accounts, shared data/API foundations, browser persistence, offline queues, and synchronization.
 3. Deliver exercise catalog, private exercises/media/tutorial links, folders, and per-set records on web.
 4. Deliver manual nutrition targets, food logging, daily rollover, editable history, and charts on web.
@@ -250,7 +250,7 @@ Design reusable API contracts and business rules now. Initial website delivery m
 Track first folder creation, first set record, first food log, weekly returning users, logging time, sync success/failure, duplicate/conflict rates, and photo upload reliability. Do not send image contents, tutorial URLs, nutrient values, or personal notes to analytics. For a personal pilot, correctness and recoverability matter more than growth targets.
 
 ## 14. Remaining clarification and adjustable defaults
-1. Does “both” confirm English and Arabic as well as Android and iOS? The document assumes all four for planning.
+English and Arabic interface support, including RTL, is confirmed. Android and iOS remain the later native phase.
 Nutrition entry is confirmed: enter the portion's calories and macros directly, record weight separately, and add each value to its daily consumed / target counter.
 
 Other working defaults: Monday–Sunday weeks, one replaceable private tutorial URL per exercise, one editable body-weight measurement per day, Start New Day opens today without locking history, 10 MB original photo limit, and a proposed 30-day backup retention period. These can be changed without reopening the confirmed product scope.

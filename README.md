@@ -1,13 +1,19 @@
 # TrainFuel
 
-A website-first workout, manual nutrition, and private progress tracker. This repository currently provides the application foundation; product journeys, offline sync, and private-media APIs are future development work. React Native apps are a later phase.
+A website-first workout, manual nutrition, and private progress tracker. The setup baseline is on `main`/`dev`; accounts and the modern English/Arabic web shell are on `feature/milestone-1`. `feature/milestone-2` adds durable offline profile saves, real synchronization/conflicts, and private-media foundations. Tracking journeys and React Native apps remain later work.
+
+For authentication setup, endpoint contracts, and the Postman JSON files, see [Milestone 1 accounts/API documentation](docs/accounts-api.md).
+
+See the [sync API](docs/sync-api.md), [media API](docs/media-api.md), [Milestone 2 Postman JSON](docs/postman/TrainFuel.milestone-2.postman_collection.json), and [integration contracts for Milestones 3 and 4](docs/integration/milestone-2.md).
+
+See the [feature roadmap](docs/feature-roadmap.md) for the planned milestones, branch names, dependencies, and acceptance criteria.
 
 ## Repository layout
 
 ```text
 .agents/skills/       Project-specific development guidance
-backend/             Django + DRF, UUID account foundation, PostgreSQL settings
-frontend/            Minimal React + TypeScript + Vite application
+backend/             Django/DRF accounts, sync, private media, PostgreSQL migrations
+frontend/            React/TypeScript, bilingual screens, IndexedDB queue, cached shell
 docs/prd.md          Product requirements and acceptance criteria
 docs/schema.dbml     Logical database model; not a deployable migration
 docs/diagrams/       Database diagram
@@ -81,9 +87,9 @@ Run commands from the repository root unless shown otherwise.
    backend/.venv/bin/python backend/manage.py runserver 127.0.0.1:8000
    ```
 
-   `http://127.0.0.1:8000/api/health/` returns `{"status":"ok"}` when the database is reachable, or HTTP 503 when unavailable. The migrations establish Django infrastructure and the UUID email-based user foundation; they do not implement all 27 DBML tables. Optionally create a local admin with `backend/.venv/bin/python backend/manage.py createsuperuser`.
+   `http://127.0.0.1:8000/api/health/` returns `{"status":"ok"}` when the database is reachable, or HTTP 503 when unavailable. Migrations establish accounts plus sync/media foundations; they do not implement all 27 DBML domain tables. Optionally create a local admin with `backend/.venv/bin/python backend/manage.py createsuperuser`.
 
-4. In another terminal, start the minimal frontend:
+4. In another terminal, start the frontend:
 
    ```bash
    cd frontend
@@ -93,12 +99,16 @@ Run commands from the repository root unless shown otherwise.
 
    Open the URL printed by Vite. `/api` requests are proxied to the local backend during development.
 
+   Offline shell restart uses the production build: `npm run build`, then `npm run preview`. HMR development is uncached. Both development and preview proxy `/api`; set `TRAINFUEL_API_TARGET` for an alternate backend port. Production hosting must route `/api` to Django and serve `sw.js` without long-lived HTTP caching.
+
+   For parallel milestone terminals, use separate Git worktrees, databases, virtual environments, and ports. This milestone uses `/tmp/trainfuel-milestone-2`, database `trainfuel_milestone2`, API 18000, and web 15173. It leaves the shared checkout and original database untouched. Set `FRONTEND_URL` and `CSRF_TRUSTED_ORIGINS` to your web origin in that worktree's ignored `.env`.
+
 ## Checks
 
 ```bash
 backend/.venv/bin/python backend/manage.py check
 backend/.venv/bin/python backend/manage.py makemigrations --check --dry-run
-backend/.venv/bin/python backend/manage.py test accounts config
+backend/.venv/bin/python backend/manage.py test accounts config sync media_assets
 ```
 
 Backend tests use PostgreSQL and create/remove a separate test database. The local container role supports this; an externally managed role needs test-database privileges.
@@ -107,6 +117,9 @@ Backend tests use PostgreSQL and create/remove a separate test database. The loc
 cd frontend
 npm run typecheck
 npm run build
+npm run test:e2e
 ```
 
-This setup is for local development. Deployment configuration, production secrets/permissions, full domain schema, authentication APIs, synchronization, and private uploads remain separate feature work. Product rules and proposed defaults are documented in [the PRD](docs/prd.md); coding guidance lives in [AGENTS.md](AGENTS.md).
+Browser tests start production preview and Django. Alternate ports: `TRAINFUEL_API_PORT=18000 TRAINFUEL_WEB_PORT=15173 npm run test:e2e`; match the `.env` CSRF origin. Run periodic media cleanup and feed retention commands described in the API docs. Local media storage is ignored by Git; S3-compatible storage requires a private bucket and environment-specific configuration.
+
+Deployment configuration, Google/SMTP/S3 live checks, full domain schema, and domain-specific offline adapters remain required before website release. Product rules and defaults are in [the PRD](docs/prd.md); contributor guidance is in [AGENTS.md](AGENTS.md).
