@@ -19,6 +19,9 @@ import "./styles.css";
 import { SyncProvider } from "./sync/SyncContext";
 import { SyncPage } from "./pages/SyncPage";
 
+import { ProgressPage } from "./progress/ProgressPage";
+import { RemindersPage, ReminderScheduler } from "./progress/RemindersPage";
+
 function Protected() {
   const { account, loading } = useAuth();
   const { t } = useLanguage();
@@ -88,6 +91,7 @@ export function App() {
         <SyncProvider>
           <BrowserRouter>
             <RouteFocus />
+            <ReminderScheduler />
             <Routes>
               <Route path="/" element={<Entry />} />
               <Route path="/login" element={<AuthPage mode="login" />} />
@@ -110,6 +114,8 @@ export function App() {
                     <Route path="/app" element={<WorkspacePage />} />
                     <Route path="/app/profile" element={<ProfilePage />} />
                     <Route path="/app/account" element={<AccountPage />} />
+                    <Route path="/app/progress" element={<ProgressPage />} />
+                    <Route path="/app/reminders" element={<RemindersPage />} />
                     <Route path="/app/sync" element={<SyncPage />} />
                   </Route>
                 </Route>

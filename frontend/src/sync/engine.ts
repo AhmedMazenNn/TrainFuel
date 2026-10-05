@@ -8,6 +8,8 @@ import {
   type PendingOperation,
 } from "../offline/database";
 
+import { uploadStagedMedia } from "../offline/media";
+
 interface Receipt {
   idempotency_key: string;
   status: PendingOperation["status"] | "accepted";
@@ -49,7 +51,9 @@ export async function synchronize(owner: string) {
     if ((await database.get("meta", `cursor:${owner}`)) === undefined)
       await snapshot();
     const blocked = new Set<string>();
-    for (const op of await operations(owner)) {
+    const considered = new Set<string>();
+    for (let op of await operations(owner)) {
+      considered.add(op.idempotency_key);
       const entity = `${op.entity_type}:${op.entity_id}`;
       if (op.status !== "pending") {
         blocked.add(entity);
@@ -57,6 +61,21 @@ export async function synchronize(owner: string) {
       }
       if (blocked.has(entity)) continue;
       await active();
+      if (
+        op.entity_type === "progress_photo" &&
+        typeof op.payload.local_media_id === "string"
+      ) {
+        const localId = op.payload.local_media_id;
+        const assetId = await uploadStagedMedia(owner, localId);
+        const { local_media_id: _local, ...fields } = op.payload;
+        op = { ...op, payload: { ...fields, asset_id: assetId } };
+        await database.put("operations", op);
+        await database.put(
+          "meta",
+          localId,
+          `photo-staged:${op.idempotency_key}`,
+        );
+      }
       const result = await api<{ results: Receipt[] }>("/sync/push/", "POST", {
         device_id: device,
         operations: [
@@ -74,6 +93,23 @@ export async function synchronize(owner: string) {
       const receipt = result.results[0];
       if (receipt.status === "accepted") {
         await database.delete("operations", op.idempotency_key);
+        const stagedId = await database.get(
+          "meta",
+          `photo-staged:${op.idempotency_key}`,
+        );
+        if (typeof stagedId === "string") {
+          await database.delete("media", stagedId);
+          await database.delete("meta", `photo-staged:${op.idempotency_key}`);
+        }
+        if (op.entity_type === "progress_photo" && receipt.current?.asset_id) {
+          for (const media of await database.getAllFromIndex(
+            "media",
+            "owner",
+            owner,
+          ))
+            if (media.assetId === receipt.current.asset_id)
+              await database.delete("media", media.id);
+        }
         if (receipt.current)
           await applyRemote(owner, [
             {
@@ -122,6 +158,7 @@ export async function synchronize(owner: string) {
         throw error;
       }
     }
+    return considered;
   };
   if (navigator.locks)
     return navigator.locks.request(`trainfuel-sync:${owner}`, run);

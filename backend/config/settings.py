@@ -24,6 +24,7 @@ ALLOWED_HOSTS = [
 ]
 INSTALLED_APPS = [
     "django.contrib.admin",
+    "django.contrib.postgres",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -33,6 +34,7 @@ INSTALLED_APPS = [
     "accounts",
     "sync",
     "media_assets",
+    "progress",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

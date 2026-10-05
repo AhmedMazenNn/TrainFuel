@@ -63,10 +63,10 @@ Review: [Milestone 2 draft PR #1](https://github.com/AhmedMazenNn/TrainFuel/pull
 
 | ID | Branch | Depends on | Deliverable | Status |
 | --- | --- | --- | --- | --- |
-| F16 | `feature/weight-progress` | F03, F05, F06 | Dated weight entry/correction/deletion, kilogram storage with display conversion, notes, weight charts, gaps for missing observations, and readable numeric history. | Planned |
-| F17 | `feature/weekly-progress-photos` | F07, F06 | Weekly photo galleries, stored week assignments, optional labels/notes, editable capture dates/weeks, replacement/deletion, opt-in private browser caching, and offline upload staging. | Planned |
-| F18 | `feature/photo-comparison` | F17, F16 | Two-week comparison, label matching/manual selection, recorded dates and optional weight summaries, responsive side-by-side/toggle navigation, and source-preserving zoom. | Planned |
-| F19 | `feature/web-reminders` | F01, F03, F05 | Optional food/exercise/weight/photo reminder preferences, local time/day settings, permission/capability handling, and best-effort web notification scheduling. | Planned |
+| F16 | `feature/weight-progress` | F03, F05, F06 | Dated weight entry/correction/deletion, kilogram storage with display conversion, notes, weight charts, gaps for missing observations, and readable numeric history. | Implemented on `feature/milestone-5`; integration/review pending |
+| F17 | `feature/weekly-progress-photos` | F07, F06 | Weekly photo galleries, stored week assignments, optional labels/notes, editable capture dates/weeks, replacement/deletion, opt-in private browser caching, and offline upload staging. | Implemented on `feature/milestone-5`; integration/review pending |
+| F18 | `feature/photo-comparison` | F17, F16 | Two-week comparison, label matching/manual selection, recorded dates and optional weight summaries, responsive side-by-side/toggle navigation, and source-preserving zoom. | Implemented on `feature/milestone-5`; integration/review pending |
+| F19 | `feature/web-reminders` | F01, F03, F05 | Optional food/exercise/weight/photo reminder preferences, local time/day settings, permission/capability handling, and best-effort web notification scheduling. | Implemented on `feature/milestone-5`; integration/review pending |
 
 **Acceptance:** weight conversions never alter stored values. At most four active finalized photos fit an owner/week across devices; concurrent fifth uploads preserve rejected drafts. Moves into full weeks fail without losing the original; timezone changes never regroup old photos. Comparisons work without weight entries and make no body-composition claims. Notification denial leaves other features usable; disabled reminders stop and settings changes do not duplicate notifications. Private details never appear in notification text.
 
