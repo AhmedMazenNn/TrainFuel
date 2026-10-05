@@ -27,6 +27,30 @@ async function register(page: Page) {
       );
   });
 }
+async function privatePhotoCacheEnabled(page: Page) {
+  return page.evaluate(
+    () =>
+      new Promise<boolean>((resolve, reject) => {
+        const request = indexedDB.open("trainfuel-offline");
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const database = request.result;
+          const transaction = database.transaction("meta", "readonly");
+          const store = transaction.objectStore("meta");
+          const active = store.get("active");
+          active.onerror = () => reject(active.error);
+          active.onsuccess = () => {
+            const preference = store.get(`photos-cache:${active.result}`);
+            preference.onerror = () => reject(preference.error);
+            preference.onsuccess = () => {
+              database.close();
+              resolve(preference.result === true);
+            };
+          };
+        };
+      }),
+  );
+}
 test("offline weight survives restart and syncs once with readable history", async ({
   page,
   context,
@@ -137,6 +161,7 @@ test("accepted private photo cache is opt-in and disappears after explicit clear
   await page
     .getByLabel("Cache private photos on this trusted device (up to 50 MB)")
     .check();
+  await expect.poll(() => privatePhotoCacheEnabled(page)).toBe(true);
   await page.reload();
   await expect(page.locator(".progress-gallery img")).toBeVisible();
   await context.setOffline(true);
