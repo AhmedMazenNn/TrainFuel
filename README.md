@@ -2,6 +2,8 @@
 
 A website-first workout, manual nutrition, and private progress tracker. This repository currently provides the application foundation; product journeys, offline sync, and private-media APIs are future development work. React Native apps are a later phase.
 
+See the [feature roadmap](docs/feature-roadmap.md) for the planned milestones, branch names, dependencies, and acceptance criteria.
+
 ## Repository layout
 
 ```text
