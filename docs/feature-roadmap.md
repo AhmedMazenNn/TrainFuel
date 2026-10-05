@@ -6,7 +6,7 @@ This is the development backlog for the responsive website MVP, followed by the 
 
 - **Complete — setup:** Django/DRF scaffold, UUID email-based user foundation, PostgreSQL development service, initial infrastructure migrations, health endpoint, minimal React/TypeScript app, repository docs, and project skills.
 - **Preserved — design reference:** the original AI-generated UI is on `feature/generated-ui`. Its simulated sync, local storage, and sample screens do not count as completed product features.
-- **Milestone 1:** implemented on `feature/milestone-1`; live Google and delivered email checks require external configuration. Remaining milestones are planned. Update a feature's status when implementation starts and after its acceptance checks pass; record the pull request alongside it.
+- **Milestone 1:** implemented and pushed on `feature/milestone-1`; live Google/email checks require configuration. **Milestone 2:** implemented on isolated `feature/milestone-2`; review pending, live S3 not configured. Other terminals own Milestones 3 and 4. See [integration contracts](integration/milestone-2.md). Update status after acceptance checks pass and record the pull request.
 
 Start each feature from the latest `dev`, use the branch name below, and open a pull request into `dev`. Fixes use `fix/<short-description>` from `dev`. Keep `main` as the clean setup baseline until a reviewed promotion is explicitly requested. Do not merge the generated design automatically.
 
@@ -28,10 +28,10 @@ These capabilities are built before domain features are declared complete. Exten
 
 | ID | Branch | Depends on | Deliverable | Status |
 | --- | --- | --- | --- | --- |
-| F04 | `feature/offline-storage` | F01, F03 | Account-partitioned persistent browser database, cached app shell, durable local-save/operation queue boundary, client-generated IDs, data versioning, and recoverable drafts. Establish the established-session offline access policy. | Planned |
-| F05 | `feature/sync-engine` | F04 | Authorized replay, idempotency receipts, revisions, transactional change records, cursors, tombstones, retry handling, and resync after cursor expiry. Start with supported profile data and reuse the contract for subsequent domains. | Planned |
-| F06 | `feature/sync-conflict-center` | F03, F05 | Honest local/pending/synced/attention indicators, explicit sync, reconnect/foreground triggers, visible conflict resolution, and logout choices for pending work. | Planned |
-| F07 | `feature/media-pipeline` | F01, F05 | Controlled upload initiation, processing and finalization, private originals/thumbnails, authorized temporary delivery, metadata stripping, asset ownership/purpose checks, and failed/orphan cleanup. Establish the public catalog asset boundary separately. | Planned |
+| F04 | `feature/offline-storage` | F01, F03 | Account-partitioned IndexedDB, production cached shell, atomic durable profile saves/queue, client IDs, versioned storage and recovered drafts. Trusted-device established-session policy documented. | Implemented on `feature/milestone-2`; review pending |
+| F05 | `feature/sync-engine` | F04 | Authorized replay, idempotency receipts, revisions, commit-ordered change feed, cursors/tombstones, retries and expired-cursor snapshot. Profile plus read-only media metadata; extension registry for later domains. | Implemented on `feature/milestone-2`; domain adapters required later |
+| F06 | `feature/sync-conflict-center` | F03, F05 | Real pending/sync/attention states, manual/reconnect/foreground sync, explicit conflict choice with recovered drafts, and pending-work logout choices. | Implemented on `feature/milestone-2`; review pending |
+| F07 | `feature/media-pipeline` | F01, F05 | Controlled private/local uploads, metadata-stripped originals/thumbnails, expiring owner-bound delivery, purpose/attachment checks, cleanup and separate catalog boundary. S3-compatible configuration included. | Implemented on `feature/milestone-2`; live S3/release rights checks pending |
 
 **Acceptance:** local changes survive reload before replay; retrying a write does not duplicate it; cursors advance only after durable application; concurrent edits retain both versions; stale devices cannot resurrect deletions. Session expiry pauses sync without silently losing local data. Private metadata and files are inaccessible to another account or a catalog admin. Uploading bytes alone never accepts a domain photo. Rejected/failed uploads remain recoverable.
 
@@ -92,7 +92,7 @@ Schedule and estimate native work separately. The website release does not depen
 
 - **Before F08:** specify exercise translation fallback. English/Arabic scope is confirmed, and Milestone 1 uses a fresh design.
 - **Before F01/F13/F16/F17:** retain or deliberately revise the PRD working defaults: kilograms, Monday–Sunday weeks, one tutorial URL per exercise, one weight measurement per date, and Start New Day opening today without locking history.
-- **Before F07/F08:** select storage/media processing and licensed exercise-media sources; confirm accepted formats and the proposed 10 MB original-photo limit.
+- **F07 storage confirmed:** private local development storage plus S3-compatible option; no public private-media URLs. Processing formats/limits are documented in [media API](media-api.md); licensed exercise-media sources remain a decision before F08/release.
 - **Before F20/F21:** confirm backup retention (proposed 30 days), production hosting, and measurable performance budgets against an agreed device/network environment.
 
 These are tracked decisions, not requests to implement additional features. Automatic nutrition calculation, food databases/barcodes, AI body analysis, social sharing/coaching, payments, wearables, and workout-completion flows remain excluded from the website MVP.
@@ -105,4 +105,4 @@ These are tracked decisions, not requests to implement additional features. Auto
 4. No private payloads/secrets enter logs or commits. Destructive actions have an explicit recovery/confirmation path; missing data remains unknown rather than fabricated.
 5. Documentation and this roadmap reflect actual implementation status, the pull request is reviewed into `dev`, and any remaining limitation is recorded. Prototype demos alone do not satisfy acceptance.
 
-**Recommended next feature after Milestone 1 review:** F04, `feature/offline-storage`, then the sync foundation before logging journeys.
+**Integration order:** review Milestone 1, then Milestone 2 into `dev`; integrate the Milestone 3 and 4 branches with their domain-specific offline adapters and acceptance checks.

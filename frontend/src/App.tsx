@@ -16,6 +16,8 @@ import { ProfilePage } from "./pages/ProfilePage";
 import { WorkspacePage } from "./pages/WorkspacePage";
 import { AccountPage } from "./pages/AccountPage";
 import "./styles.css";
+import { SyncProvider } from "./sync/SyncContext";
+import { SyncPage } from "./pages/SyncPage";
 
 function Protected() {
   const { account, loading } = useAuth();
@@ -83,33 +85,39 @@ export function App() {
   return (
     <LanguageProvider>
       <AuthProvider>
-        <BrowserRouter>
-          <RouteFocus />
-          <Routes>
-            <Route path="/" element={<Entry />} />
-            <Route path="/login" element={<AuthPage mode="login" />} />
-            <Route path="/register" element={<AuthPage mode="register" />} />
-            <Route
-              path="/forgot-password"
-              element={<AuthPage mode="recovery" />}
-            />
-            <Route path="/reset-password" element={<AuthPage mode="reset" />} />
-            <Route element={<Protected />}>
-              <Route element={<AppShell />}>
-                <Route
-                  path="/onboarding"
-                  element={<ProfilePage onboarding />}
-                />
-                <Route element={<Ready />}>
-                  <Route path="/app" element={<WorkspacePage />} />
-                  <Route path="/app/profile" element={<ProfilePage />} />
-                  <Route path="/app/account" element={<AccountPage />} />
+        <SyncProvider>
+          <BrowserRouter>
+            <RouteFocus />
+            <Routes>
+              <Route path="/" element={<Entry />} />
+              <Route path="/login" element={<AuthPage mode="login" />} />
+              <Route path="/register" element={<AuthPage mode="register" />} />
+              <Route
+                path="/forgot-password"
+                element={<AuthPage mode="recovery" />}
+              />
+              <Route
+                path="/reset-password"
+                element={<AuthPage mode="reset" />}
+              />
+              <Route element={<Protected />}>
+                <Route element={<AppShell />}>
+                  <Route
+                    path="/onboarding"
+                    element={<ProfilePage onboarding />}
+                  />
+                  <Route element={<Ready />}>
+                    <Route path="/app" element={<WorkspacePage />} />
+                    <Route path="/app/profile" element={<ProfilePage />} />
+                    <Route path="/app/account" element={<AccountPage />} />
+                    <Route path="/app/sync" element={<SyncPage />} />
+                  </Route>
                 </Route>
               </Route>
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </SyncProvider>
       </AuthProvider>
     </LanguageProvider>
   );

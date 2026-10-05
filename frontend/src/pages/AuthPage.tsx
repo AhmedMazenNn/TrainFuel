@@ -17,7 +17,7 @@ import { GoogleButton } from "../components/GoogleButton";
 type Mode = "login" | "register" | "recovery" | "reset";
 export function AuthPage({ mode }: { mode: Mode }) {
   const { t, errorText } = useLanguage();
-  const { account, setAccount, unavailable, loading } = useAuth();
+  const { account, setAccount, unavailable, loading, sessionValid } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -35,7 +35,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
         {t("loading")}
       </div>
     );
-  if (account && (mode === "login" || mode === "register"))
+  if (account && sessionValid && (mode === "login" || mode === "register"))
     return (
       <Navigate
         to={account.profile.display_name ? "/app" : "/onboarding"}

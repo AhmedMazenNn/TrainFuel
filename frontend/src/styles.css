@@ -847,3 +847,76 @@ p {
     scroll-behavior: auto !important;
   }
 }
+.sync-summary {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  margin-block: 1rem;
+}
+.sync-operation {
+  padding: 1.5rem;
+  margin-block: 1rem;
+}
+.sync-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-block: 1rem;
+}
+.sync-actions .button,
+.sync-summary .button {
+  width: auto;
+}
+.conflict-versions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.conflict-versions pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 0.8rem;
+  background: #f0f4f2;
+  padding: 1rem;
+  border-radius: 12px;
+}
+.sync-status {
+  font-size: 0.8rem;
+  color: #526b5d;
+}
+.logout-dialog {
+  border: 0;
+  border-radius: 24px;
+  padding: 2rem;
+  max-width: min(600px, 90vw);
+}
+.logout-dialog::backdrop {
+  background: #12261db3;
+}
+@media (max-width: 600px) {
+  .conflict-versions {
+    grid-template-columns: 1fr;
+  }
+  .sync-summary {
+    flex-wrap: wrap;
+  }
+}
+.version-fields {
+  background: #f0f4f2;
+  border-radius: 12px;
+  padding: 1rem;
+}
+.version-fields div {
+  margin-block: 0.5rem 1rem;
+}
+.version-fields dt {
+  font-size: 0.8rem;
+  color: #526b5d;
+}
+.version-fields dd {
+  margin: 0.25rem 0 0;
+  overflow-wrap: anywhere;
+  font-weight: 600;
+}

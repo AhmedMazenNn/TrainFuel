@@ -1,12 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { Brand, LanguageSwitch, Message } from "./Primitives";
+import { useSync } from "../sync/SyncContext";
+import { syncCopy } from "../sync/copy";
+import { db, operations } from "../offline/database";
 
 export function AppShell() {
-  const { account, signOut } = useAuth();
-  const { t, errorText } = useLanguage();
+  const { account, signOut, sessionValid } = useAuth();
+  const { t, errorText, language } = useLanguage();
+  const { queue, busy: syncBusy, error: syncError, sync } = useSync();
+  const copy = syncCopy[language];
+  const dialog = useRef<HTMLDialogElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [online, setOnline] = useState(navigator.onLine);
@@ -19,11 +25,12 @@ export function AppShell() {
       window.removeEventListener("offline", update);
     };
   }, []);
-  async function leave() {
+  async function leave(discard = false) {
     setBusy(true);
     setError("");
     try {
-      await signOut();
+      dialog.current?.close();
+      await signOut(discard);
     } catch (caught) {
       setError(errorText(caught));
     } finally {
@@ -43,6 +50,7 @@ export function AppShell() {
           </NavLink>
           <NavLink to="/app/profile">{t("profile")}</NavLink>
           <NavLink to="/app/account">{t("account")}</NavLink>
+          <NavLink to="/app/sync">{copy.details}</NavLink>
         </nav>
         <div className="header-actions">
           <LanguageSwitch />
@@ -52,7 +60,14 @@ export function AppShell() {
           <button
             className="sign-out"
             type="button"
-            onClick={leave}
+            onClick={async () => {
+              const media = await (
+                await db
+              ).getAllFromIndex("media", "owner", account!.user.id);
+              const pending = await operations(account!.user.id);
+              if (pending.length || media.length) dialog.current?.showModal();
+              else void leave();
+            }}
             disabled={busy}
           >
             {t(busy ? "signingOut" : "signOut")}
@@ -60,10 +75,73 @@ export function AppShell() {
         </div>
       </header>
       <main id="main" className="workspace-main">
-        {!online && <Message>{t("offlineNotice")}</Message>}
+        {!online && <Message>{copy.offline}</Message>}
+        {!sessionValid && online && <Message>{copy.paused}</Message>}
+        <p className="sync-status" role="status">
+          {syncBusy
+            ? copy.syncing
+            : syncError || queue.some((op) => op.status !== "pending")
+              ? copy.attention
+              : queue.length
+                ? copy.pending
+                : copy.synced}
+        </p>
         {error && <Message>{error}</Message>}
         <Outlet />
       </main>
+      <dialog
+        ref={dialog}
+        className="logout-dialog"
+        aria-labelledby="logout-title"
+      >
+        <h2 id="logout-title">{copy.logout}</h2>
+        <p>{copy.logoutIntro}</p>
+        <div className="sync-actions">
+          <button
+            className="button primary"
+            disabled={!online || !sessionValid || busy}
+            onClick={async () => {
+              try {
+                await sync();
+                const pending = await operations(account!.user.id);
+                const media = await (
+                  await db
+                ).getAllFromIndex("media", "owner", account!.user.id);
+                if (pending.length || media.length) {
+                  setError(copy.attention);
+                  return;
+                }
+                await leave();
+              } catch {
+                setError(copy.serverError);
+              }
+            }}
+          >
+            {copy.syncLeave}
+          </button>
+          <button
+            className="button secondary"
+            disabled={busy}
+            onClick={() => leave()}
+          >
+            {copy.retain}
+          </button>
+          <button
+            className="button danger"
+            disabled={busy}
+            onClick={() => leave(true)}
+          >
+            {copy.discard}
+          </button>
+          <button
+            className="button secondary"
+            onClick={() => dialog.current?.close()}
+          >
+            {copy.cancel}
+          </button>
+        </div>
+        {error && <Message>{error}</Message>}
+      </dialog>
     </div>
   );
 }

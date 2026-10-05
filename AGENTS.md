@@ -11,8 +11,8 @@ TrainFuel is a personal workout, manual nutrition, and private body-progress tra
 
 ## Current repository
 
-- `frontend/` contains React/TypeScript/Vite account, recovery, onboarding, and settings screens with English/Arabic and RTL support. Persistent offline records are not implemented yet. Its root manifest defines development commands.
-- `backend/` contains Django/DRF settings, PostgreSQL configuration, UUID email-based accounts, profiles, verified Google identity linking, CSRF/session APIs, recovery, migrations, tests, and `/api/health/`. Live Google needs GOOGLE_CLIENT_ID and email delivery needs SMTP configuration. The full 27-table domain schema is not implemented.
+- `frontend/` contains bilingual React/TypeScript/Vite account screens, durable account-partitioned IndexedDB profile saves/queues/drafts, a real sync/conflict screen, staged media helpers, and a production cached shell. Domain records need their own adapters and verification. Its root manifest defines development commands.
+- `backend/` contains accounts plus transactional sync replay/feed/cursor APIs and private/public-separated media processing/delivery. Read [integration contracts](docs/integration/milestone-2.md) before implementing training or nutrition. Live Google/SMTP/S3 need external settings. The full 27-table domain schema is not implemented.
 - `compose.yaml` provides PostgreSQL 16 on loopback port 5433 with a persistent volume. `.env.example` documents configuration; root `.env` contains local secrets and must stay untracked.
 - The original AI-generated UI is preserved only on `feature/generated-ui` under `frontend/prototype/`. It contains React/Tailwind components, domain contexts/types/utilities, English/Arabic translations, localStorage adapters, simulated sync, and data-URL photos with a 1.5 MB client limit. These are design references, not production guarantees.
 
@@ -61,7 +61,7 @@ The build includes TypeScript checking. No frontend lint script is configured; P
 ```bash
 backend/.venv/bin/python backend/manage.py check
 backend/.venv/bin/python backend/manage.py makemigrations --check --dry-run
-backend/.venv/bin/python backend/manage.py test accounts config
+backend/.venv/bin/python backend/manage.py test accounts config sync media_assets
 ```
 
 Tests require PostgreSQL and create a separate test database. For behavior changes, select meaningful scenarios from PRD section 11 and the relevant skill; report checks actually run and any blockers. Documentation-only changes require skill validation and reference review rather than application dependency installation. See [README.md](README.md) for setup.

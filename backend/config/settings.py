@@ -31,6 +31,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "accounts",
+    "sync",
+    "media_assets",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -73,7 +75,7 @@ AUTH_PASSWORD_VALIDATORS = [
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.SessionAuthentication"],
-    "DEFAULT_THROTTLE_RATES": {"auth": "30/min", "password_reset": "10/hour", "profile": "120/min"},
+    "DEFAULT_THROTTLE_RATES": {"auth": "30/min", "password_reset": "10/hour", "profile": "120/min", "sync": "240/min", "media": "120/min"},
 }
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://127.0.0.1:5173").rstrip("/")
@@ -99,3 +101,23 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Neither alias exposes URLs; delivery goes through authorized application endpoints.
+MEDIA_STORAGE_BACKEND = os.environ.get("MEDIA_STORAGE_BACKEND", "local")
+STORAGES = {"default": {"BACKEND": "django.core.files.storage.FileSystemStorage"}, "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}}
+for alias, directory in [("private_media", "private"), ("catalog_media", "catalog")]:
+    if MEDIA_STORAGE_BACKEND == "s3":
+        STORAGES[alias] = {"BACKEND": "storages.backends.s3.S3Storage", "OPTIONS": {
+            "bucket_name": required_env("MEDIA_S3_BUCKET"),
+            "endpoint_url": os.environ.get("MEDIA_S3_ENDPOINT_URL") or None,
+            "region_name": os.environ.get("MEDIA_S3_REGION", "us-east-1"),
+            "location": directory,
+            "default_acl": None,
+            "querystring_auth": True,
+            "file_overwrite": False,
+        }}
+    elif MEDIA_STORAGE_BACKEND == "local":
+        STORAGES[alias] = {"BACKEND": "django.core.files.storage.FileSystemStorage", "OPTIONS": {"location": BASE_DIR.parent / ".private-media" / directory, "base_url": None}}
+    else:
+        raise ImproperlyConfigured("MEDIA_STORAGE_BACKEND must be local or s3.")
+DATA_UPLOAD_MAX_MEMORY_SIZE = 11 * 1024 * 1024

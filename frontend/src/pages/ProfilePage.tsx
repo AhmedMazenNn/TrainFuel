@@ -1,20 +1,20 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api, ApiError } from "../api/client";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import type { Profile } from "../types/accounts";
 import { Field, Message } from "../components/Primitives";
+import { saveProfile } from "../offline/database";
+import { syncCopy } from "../sync/copy";
 
 export function ProfilePage({ onboarding = false }: { onboarding?: boolean }) {
-  const { account, setAccount, refresh } = useAuth();
-  const { t, language, setLanguage, errorText } = useLanguage();
+  const { account, setLocalAccount } = useAuth();
+  const { t, language, setLanguage } = useLanguage();
   const navigate = useNavigate();
   const profile = account!.profile;
   const [draft, setDraft] = useState(profile);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [conflict, setConflict] = useState(false);
   const [saved, setSaved] = useState(false);
   useEffect(() => {
     setDraft({
@@ -34,39 +34,20 @@ export function ProfilePage({ onboarding = false }: { onboarding?: boolean }) {
     event.preventDefault();
     setBusy(true);
     setError("");
-    setConflict(false);
     setSaved(false);
     try {
-      const current = await api<Profile>("/profile/", "PATCH", {
-        revision: draft.revision,
-        display_name: draft.display_name,
-        timezone: draft.timezone,
-        weight_unit: draft.weight_unit,
-        language: draft.language,
-        goal: draft.goal,
-        height_cm: draft.height_cm || null,
-      });
-      setAccount({ ...account!, profile: current });
+      const next = await saveProfile(account!, draft);
+      const current = next.profile;
+      setLocalAccount(next);
       setLanguage(current.language);
       setSaved(true);
       if (onboarding) navigate("/app", { replace: true });
-    } catch (caught) {
-      setError(errorText(caught));
-      setConflict(
-        caught instanceof ApiError && caught.data.code === "revision_conflict",
+    } catch {
+      setError(
+        language === "ar"
+          ? "تعذّر الحفظ على هذا الجهاز. راجع الحقول ومساحة تخزين المتصفح."
+          : "Could not save on this device. Check your fields and browser storage.",
       );
-    } finally {
-      setBusy(false);
-    }
-  }
-  async function reload() {
-    setBusy(true);
-    try {
-      await refresh();
-      setError("");
-      setConflict(false);
-    } catch (caught) {
-      setError(errorText(caught));
     } finally {
       setBusy(false);
     }
@@ -82,17 +63,7 @@ export function ProfilePage({ onboarding = false }: { onboarding?: boolean }) {
       </header>
       <form className="surface profile-form" onSubmit={submit} aria-busy={busy}>
         {error && <Message>{error}</Message>}
-        {saved && <Message success>{t("saved")}</Message>}
-        {conflict && (
-          <button
-            type="button"
-            className="button secondary"
-            disabled={busy}
-            onClick={reload}
-          >
-            {t("reloadProfile")}
-          </button>
-        )}
+        {saved && <Message success>{syncCopy[language].saved}</Message>}
         <Field
           label={t("displayName")}
           autoComplete="nickname"
@@ -195,11 +166,7 @@ export function ProfilePage({ onboarding = false }: { onboarding?: boolean }) {
           onChange={(event) => update("height_cm", event.target.value || null)}
           disabled={busy}
         />
-        <button
-          className="button primary"
-          type="submit"
-          disabled={busy || conflict}
-        >
+        <button className="button primary" type="submit" disabled={busy}>
           {t(busy ? "saving" : onboarding ? "continue" : "save")}
           <span aria-hidden="true">↗</span>
         </button>

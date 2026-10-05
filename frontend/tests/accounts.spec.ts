@@ -23,9 +23,12 @@ test("account onboarding, profile persistence, logout, and private-route protect
   await page.getByRole("link", { name: "Your profile", exact: true }).click();
   await page.getByLabel("Weight units").selectOption("lb");
   await page.getByRole("button", { name: "Save preferences" }).click();
-  await expect(page.getByRole("status")).toContainText(
-    "Your preferences are saved.",
-  );
+  await expect(
+    page
+      .getByRole("status")
+      .filter({ hasText: "Saved on this device" })
+      .first(),
+  ).toContainText("Saved on this device");
   await page.reload();
   await expect(page.getByLabel("Weight units")).toHaveValue("lb");
   await expect(page.getByLabel("Timezone", { exact: true })).toHaveValue(
@@ -36,6 +39,7 @@ test("account onboarding, profile persistence, logout, and private-route protect
   await expect(secondTab.getByLabel("What should we call you?")).toHaveValue(
     "Browser Tester",
   );
+  await expect(page.locator(".sync-status")).toHaveText("Synced");
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(page).toHaveURL(/login/);
   await expect(secondTab).toHaveURL(/login/);

@@ -127,6 +127,8 @@ class ProfileView(AccountAPIView):
             if fields:
                 profile.revision += 1
                 profile.save(update_fields=[*fields, "revision", "updated_at"])
+                from sync.services import record_change
+                record_change("profile", profile.pk, profile.revision, owner=request.user)
         return Response(ProfileSerializer(profile).data)
 
 
