@@ -1,0 +1,673 @@
+{
+  "info": {
+    "name": "TrainFuel Milestone 4 Nutrition",
+    "description": "Run sequentially; generated test account, session cookies, CSRF, complete portion totals, history and stale revisions.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get CSRF",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/auth/csrf/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const nutritionResponse=pm.response.json(); if(nutritionResponse.csrf_token)pm.environment.set(\"csrf_token\",nutritionResponse.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register isolated test account",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/auth/register/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"nutrition-{{$guid}}@example.com\",\n  \"password\": \"Nutrition-postman-password!\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\",()=>pm.response.to.have.status(201));",
+              "const nutritionResponse=pm.response.json(); if(nutritionResponse.csrf_token)pm.environment.set(\"csrf_token\",nutritionResponse.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create manual schedule",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/nutrition/targets/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"payload\": {\n    \"effective_date\": \"2026-01-01\",\n    \"goal\": \"cutting\",\n    \"calories_kcal\": \"2500\",\n    \"protein_g\": \"150\",\n    \"carbs_g\": \"300\",\n    \"fat_g\": \"60\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\",()=>pm.response.to.have.status(201));",
+              "const nutritionResponse=pm.response.json(); if(nutritionResponse.csrf_token)pm.environment.set(\"csrf_token\",nutritionResponse.csrf_token);",
+              "pm.environment.set(\"target_id\",nutritionResponse.current.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create historical day snapshot",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/nutrition/days/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"payload\": {\n    \"local_date\": \"2026-01-02\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\",()=>pm.response.to.have.status(201));",
+              "const nutritionResponse=pm.response.json(); if(nutritionResponse.csrf_token)pm.environment.set(\"csrf_token\",nutritionResponse.csrf_token);",
+              "pm.environment.set(\"day_id\",nutritionResponse.current.id); pm.test(\"Snapshot copied\",()=>pm.expect(nutritionResponse.current.calorie_target).to.eql(\"2500.000\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create portion-total meal",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/nutrition/entries/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"payload\": {\n    \"day\": \"{{day_id}}\",\n    \"name\": \"150 g meal\",\n    \"portion_g\": \"150\",\n    \"calories_kcal\": \"200\",\n    \"protein_g\": \"30\",\n    \"carbs_g\": \"0\",\n    \"fat_g\": \"0\",\n    \"status\": \"complete\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\",()=>pm.response.to.have.status(201));",
+              "const nutritionResponse=pm.response.json(); if(nutritionResponse.csrf_token)pm.environment.set(\"csrf_token\",nutritionResponse.csrf_token);",
+              "pm.environment.set(\"food_id\",nutritionResponse.current.id); pm.test(\"No portion scaling\",()=>pm.expect(nutritionResponse.current.protein_g).to.eql(\"30.000\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create unknown draft with explicit zero",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/nutrition/entries/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"payload\": {\n    \"day\": \"{{day_id}}\",\n    \"name\": \"Draft\",\n    \"portion_g\": \"150\",\n    \"calories_kcal\": null,\n    \"protein_g\": \"0\",\n    \"carbs_g\": \"0\",\n    \"fat_g\": \"0\",\n    \"status\": \"draft\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\",()=>pm.response.to.have.status(201));",
+              "const nutritionResponse=pm.response.json(); if(nutritionResponse.csrf_token)pm.environment.set(\"csrf_token\",nutritionResponse.csrf_token);",
+              "pm.test(\"Unknown stays null\",()=>pm.expect(nutritionResponse.current.calories_kcal).to.eql(null)); pm.test(\"Zero stays zero\",()=>pm.expect(nutritionResponse.current.protein_g).to.eql(\"0.000\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Read weekly counters",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/nutrition/history/?date=2026-01-02"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const nutritionResponse=pm.response.json(); if(nutritionResponse.csrf_token)pm.environment.set(\"csrf_token\",nutritionResponse.csrf_token);",
+              "pm.test(\"Logged denominator\",()=>pm.expect(nutritionResponse.logged_days).to.eql(1));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Change schedule without rewriting history",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/nutrition/targets/{{target_id}}/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"revision\": 1,\n  \"payload\": {\n    \"effective_date\": \"2026-01-01\",\n    \"goal\": \"cutting\",\n    \"calories_kcal\": \"3000\",\n    \"protein_g\": \"150\",\n    \"carbs_g\": \"300\",\n    \"fat_g\": \"60\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const nutritionResponse=pm.response.json(); if(nutritionResponse.csrf_token)pm.environment.set(\"csrf_token\",nutritionResponse.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Read preserved snapshot",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/nutrition/days/{{day_id}}/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const nutritionResponse=pm.response.json(); if(nutritionResponse.csrf_token)pm.environment.set(\"csrf_token\",nutritionResponse.csrf_token);",
+              "pm.test(\"Historical snapshot unchanged\",()=>pm.expect(nutritionResponse.calorie_target).to.eql(\"2500.000\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Explicit historical snapshot correction",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/nutrition/days/{{day_id}}/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"revision\": 1,\n  \"payload\": {\n    \"local_date\": \"2026-01-02\",\n    \"calorie_target\": \"2600\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const nutritionResponse=pm.response.json(); if(nutritionResponse.csrf_token)pm.environment.set(\"csrf_token\",nutritionResponse.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reject incomplete complete entry",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/nutrition/entries/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"payload\": {\n    \"day\": \"{{day_id}}\",\n    \"name\": \"150 g meal\",\n    \"portion_g\": \"150\",\n    \"calories_kcal\": \"200\",\n    \"protein_g\": null,\n    \"carbs_g\": \"0\",\n    \"fat_g\": \"0\",\n    \"status\": \"complete\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\",()=>pm.response.to.have.status(400));",
+              "const nutritionResponse=pm.response.json(); if(nutritionResponse.csrf_token)pm.environment.set(\"csrf_token\",nutritionResponse.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reject negative calories",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/nutrition/entries/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"payload\": {\n    \"day\": \"{{day_id}}\",\n    \"name\": \"150 g meal\",\n    \"portion_g\": \"150\",\n    \"calories_kcal\": \"-1\",\n    \"protein_g\": \"30\",\n    \"carbs_g\": \"0\",\n    \"fat_g\": \"0\",\n    \"status\": \"complete\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\",()=>pm.response.to.have.status(400));",
+              "const nutritionResponse=pm.response.json(); if(nutritionResponse.csrf_token)pm.environment.set(\"csrf_token\",nutritionResponse.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reject future day",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/nutrition/days/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"payload\": {\n    \"local_date\": \"2099-01-01\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\",()=>pm.response.to.have.status(400));",
+              "const nutritionResponse=pm.response.json(); if(nutritionResponse.csrf_token)pm.environment.set(\"csrf_token\",nutritionResponse.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create move destination",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/nutrition/days/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"payload\": {\n    \"local_date\": \"2026-01-03\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\",()=>pm.response.to.have.status(201));",
+              "const nutritionResponse=pm.response.json(); if(nutritionResponse.csrf_token)pm.environment.set(\"csrf_token\",nutritionResponse.csrf_token);",
+              "pm.environment.set(\"destination_id\",nutritionResponse.current.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Move meal to another historical date",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/nutrition/entries/{{food_id}}/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"revision\": 1,\n  \"payload\": {\n    \"day\": \"{{destination_id}}\",\n    \"name\": \"150 g meal\",\n    \"portion_g\": \"150\",\n    \"calories_kcal\": \"200\",\n    \"protein_g\": \"30\",\n    \"carbs_g\": \"0\",\n    \"fat_g\": \"0\",\n    \"status\": \"complete\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const nutritionResponse=pm.response.json(); if(nutritionResponse.csrf_token)pm.environment.set(\"csrf_token\",nutritionResponse.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reject stale food correction",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/nutrition/entries/{{food_id}}/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"revision\": 1,\n  \"payload\": {\n    \"day\": \"{{destination_id}}\",\n    \"name\": \"150 g meal\",\n    \"portion_g\": \"150\",\n    \"calories_kcal\": \"200\",\n    \"protein_g\": \"30\",\n    \"carbs_g\": \"0\",\n    \"fat_g\": \"0\",\n    \"status\": \"complete\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\",()=>pm.response.to.have.status(409));",
+              "const nutritionResponse=pm.response.json(); if(nutritionResponse.csrf_token)pm.environment.set(\"csrf_token\",nutritionResponse.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete food with revision",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/nutrition/entries/{{food_id}}/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"revision\": 2\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const nutritionResponse=pm.response.json(); if(nutritionResponse.csrf_token)pm.environment.set(\"csrf_token\",nutritionResponse.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tombstone cannot be resurrected",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/nutrition/entries/{{food_id}}/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"revision\": 3,\n  \"payload\": {\n    \"day\": \"{{destination_id}}\",\n    \"name\": \"150 g meal\",\n    \"portion_g\": \"150\",\n    \"calories_kcal\": \"200\",\n    \"protein_g\": \"30\",\n    \"carbs_g\": \"0\",\n    \"fat_g\": \"0\",\n    \"status\": \"complete\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\",()=>pm.response.to.have.status(409));",
+              "const nutritionResponse=pm.response.json(); if(nutritionResponse.csrf_token)pm.environment.set(\"csrf_token\",nutritionResponse.csrf_token);"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

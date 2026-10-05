@@ -1,3 +1,4 @@
+import { NutritionConflictFields } from "../nutrition/ConflictFields";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -54,6 +55,8 @@ export function SyncPage() {
     URL.revokeObjectURL(url);
   }
   function version(data: Record<string, unknown>) {
+    if (["name", "local_date", "effective_date"].some((key) => key in data))
+      return <NutritionConflictFields data={data} language={language} />;
     const fields = [
       ["display_name", "displayName"],
       ["timezone", "timezone"],

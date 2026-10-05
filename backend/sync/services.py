@@ -98,7 +98,7 @@ def replay(user, device_id, operations):
                 else:
                     status, result = "rejected", {"code": "unsupported_entity"}
                 receipt = Operation.objects.create(device=device, request_hash=fingerprint, status=status, result=result, **{k: v for k, v in operation.items() if k != "payload"})
-            current = adapter.read(user, operation["entity_id"]) if adapter else None
+            current = adapter.read(user, receipt.result.get("canonical_id", operation["entity_id"])) if adapter else None
             output.append({"idempotency_key": str(receipt.idempotency_key), "status": receipt.status, **receipt.result, "current": current})
             Device.objects.filter(pk=device.pk).update(last_seen_at=timezone.now())
     return output

@@ -17,6 +17,7 @@ import { WorkspacePage } from "./pages/WorkspacePage";
 import { AccountPage } from "./pages/AccountPage";
 import "./styles.css";
 import { SyncProvider } from "./sync/SyncContext";
+import { NutritionPage } from "./nutrition/NutritionPage";
 import { SyncPage } from "./pages/SyncPage";
 
 function Protected() {
@@ -110,6 +111,7 @@ export function App() {
                     <Route path="/app" element={<WorkspacePage />} />
                     <Route path="/app/profile" element={<ProfilePage />} />
                     <Route path="/app/account" element={<AccountPage />} />
+                    <Route path="/app/nutrition" element={<NutritionPage />} />
                     <Route path="/app/sync" element={<SyncPage />} />
                   </Route>
                 </Route>
