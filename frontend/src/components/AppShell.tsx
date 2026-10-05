@@ -49,6 +49,7 @@ export function AppShell() {
             {t("overview")}
           </NavLink>
           <NavLink to="/app/profile">{t("profile")}</NavLink>
+          <NavLink to="/app/training">{t("training")}</NavLink>
           <NavLink to="/app/account">{t("account")}</NavLink>
           <NavLink to="/app/sync">{copy.details}</NavLink>
         </nav>

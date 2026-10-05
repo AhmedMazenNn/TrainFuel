@@ -39,7 +39,13 @@ export function WorkspacePage() {
               <span className={`feature-icon ${kind}`}>
                 <Icon kind={kind} />
               </span>
-              <span className="planned-label">{t("planned")}</span>
+              {kind === "training" ? (
+                <Link className="button secondary" to="/app/training">
+                  {t("training")}
+                </Link>
+              ) : (
+                <span className="planned-label">{t("planned")}</span>
+              )}
               <h3>{t(kind)}</h3>
               <p>
                 {t(
