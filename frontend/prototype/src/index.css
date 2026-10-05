@@ -1,0 +1,90 @@
+/* @import url() FONT IMPORTS MUST ALWAYS BE AT THE VERY TOP OF THIS FILE, ABOVE THE TAILWIND IMPORTS — DO NOT DELETE THIS COMMENT */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
+
+/* CRITICAL: THE FOLLOWING TAILWIND IMPORTS MUST NEVER BE DELETED OR REORDERED — DO NOT DELETE THIS COMMENT */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* END TAILWIND IMPORTS — ALL OTHER CSS MUST GO BELOW THIS LINE */
+
+/* Dark is the signature theme. Contrast (vs. surface #191D19):
+   ink 15.9:1 · muted 8.4:1 · primary 13.9:1 · protein 8.6:1 · carbs 8.3:1 · fat 8.1:1 · attention 11.2:1 */
+:root,
+.dark {
+  --canvas: 16 18 16;
+  --surface: 25 29 25;
+  --elevated: 34 40 34;
+  --ink: 243 245 239;
+  --muted: 171 180 167;
+  --line: 46 53 46;
+  --primary: 213 243 107;
+  --primary-fg: 16 18 16;
+  --primary-soft: 46 56 30;
+  --protein: 185 170 240;
+  --carbs: 242 160 92;
+  --fat: 128 184 240;
+  --attention: 245 200 90;
+  --attention-soft: 58 48 22;
+  --danger: 255 138 122;
+  --danger-soft: 66 32 28;
+  color-scheme: dark;
+}
+/* Daylight variant keeps the same structure with darker accents for text contrast on white. */
+.light {
+  --canvas: 243 244 238;
+  --surface: 255 255 255;
+  --elevated: 234 237 228;
+  --ink: 20 23 20;
+  --muted: 84 93 80;
+  --line: 221 225 214;
+  --primary: 70 98 10;
+  --primary-fg: 255 255 255;
+  --primary-soft: 228 240 196;
+  --protein: 104 82 196;
+  --carbs: 178 88 18;
+  --fat: 34 104 176;
+  --attention: 140 92 0;
+  --attention-soft: 252 238 200;
+  --danger: 176 44 32;
+  --danger-soft: 252 226 222;
+  color-scheme: light;
+}
+html,
+body,
+#root {
+  min-height: 100%;
+}
+body {
+  @apply bg-canvas font-sans text-ink antialiased;
+  overflow-x: hidden;
+}
+[dir='rtl'] body,
+[dir='rtl'] .font-display {
+  font-family: 'IBM Plex Sans Arabic', Inter, system-ui, sans-serif;
+}
+:focus-visible {
+  outline: 2px solid rgb(var(--primary));
+  outline-offset: 2px;
+}
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+.bar-stripes {
+  background-image: repeating-linear-gradient(-45deg, transparent 0 4px, rgb(0 0 0 / 0.28) 4px 7px);
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
