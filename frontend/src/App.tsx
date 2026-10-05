@@ -21,6 +21,9 @@ import { NutritionPage } from "./nutrition/NutritionPage";
 import { SyncPage } from "./pages/SyncPage";
 import { TrainingPage } from "./training/TrainingPage";
 
+import { ProgressPage } from "./progress/ProgressPage";
+import { RemindersPage, ReminderScheduler } from "./progress/RemindersPage";
+
 function Protected() {
   const { account, loading } = useAuth();
   const { t } = useLanguage();
@@ -90,6 +93,7 @@ export function App() {
         <SyncProvider>
           <BrowserRouter>
             <RouteFocus />
+            <ReminderScheduler />
             <Routes>
               <Route path="/" element={<Entry />} />
               <Route path="/login" element={<AuthPage mode="login" />} />
@@ -112,6 +116,8 @@ export function App() {
                     <Route path="/app" element={<WorkspacePage />} />
                     <Route path="/app/profile" element={<ProfilePage />} />
                     <Route path="/app/account" element={<AccountPage />} />
+                    <Route path="/app/progress" element={<ProgressPage />} />
+                    <Route path="/app/reminders" element={<RemindersPage />} />
                     <Route path="/app/nutrition" element={<NutritionPage />} />
                     <Route path="/app/sync" element={<SyncPage />} />
                     <Route path="/app/training" element={<TrainingPage />} />

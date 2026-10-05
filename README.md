@@ -125,3 +125,5 @@ npm run test:e2e
 Browser tests start production preview and Django. Alternate ports: `TRAINFUEL_API_PORT=18000 TRAINFUEL_WEB_PORT=15173 npm run test:e2e`; match the `.env` CSRF origin. Run periodic media cleanup and feed retention commands described in the API docs. Local media storage is ignored by Git; S3-compatible storage requires a private bucket and environment-specific configuration.
 
 Deployment configuration, Google/SMTP/S3 live checks, full domain schema, and domain-specific offline adapters remain required before website release. Product rules and defaults are in [the PRD](docs/prd.md); contributor guidance is in [AGENTS.md](AGENTS.md).
+
+Progress tracking, private galleries/comparisons and reminders are documented in [docs/progress-api.md](docs/progress-api.md). Milestone 5 replay examples are in [its Postman collection](docs/postman/TrainFuel.milestone-5.postman_collection.json).

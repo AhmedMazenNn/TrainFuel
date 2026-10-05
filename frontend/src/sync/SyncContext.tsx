@@ -51,14 +51,14 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     const attempt = (async () => {
       setBusy(true);
       setError("");
+      const considered = new Set<string>();
+      let failed = false;
       try {
         let again = true;
         while (again) {
           requested.current = false;
-          const seen = new Set(
-            (await operations(owner)).map((op) => op.idempotency_key),
-          );
-          await synchronize(owner);
+          const seen = await synchronize(owner);
+          for (const key of seen) considered.add(key);
           again =
             requested.current &&
             ownerRef.current === owner &&
@@ -68,12 +68,23 @@ export function SyncProvider({ children }: { children: ReactNode }) {
             );
         }
       } catch (caught) {
+        failed = true;
         setError(caught instanceof Error ? caught.message : "Sync failed");
         throw caught;
       } finally {
         await reload();
         setBusy(false);
         running.current = null;
+        if (
+          !failed &&
+          ownerRef.current === owner &&
+          navigator.onLine &&
+          (await operations(owner)).some(
+            (op) =>
+              op.status === "pending" && !considered.has(op.idempotency_key),
+          )
+        )
+          window.dispatchEvent(new Event("trainfuel-sync-request"));
       }
     })();
     running.current = attempt;
@@ -93,10 +104,12 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       };
     trigger();
     window.addEventListener("online", trigger);
+    window.addEventListener("trainfuel-sync-request", trigger);
     window.addEventListener("trainfuel-local-change", update);
     document.addEventListener("visibilitychange", foreground);
     return () => {
       window.removeEventListener("online", trigger);
+      window.removeEventListener("trainfuel-sync-request", trigger);
       window.removeEventListener("trainfuel-local-change", update);
       document.removeEventListener("visibilitychange", foreground);
     };

@@ -59,6 +59,31 @@ export function SyncPage() {
     URL.revokeObjectURL(url);
   }
   function version(data: Record<string, unknown>) {
+    const labels: Record<string, [string, string]> = {
+      local_date: ["Recorded date", "تاريخ القياس"],
+      weight_kg: ["Weight (kg)", "الوزن (كجم)"],
+      notes: ["Notes", "ملاحظات"],
+      week_start: ["Assigned week", "الأسبوع المخصص"],
+      capture_date: ["Capture date", "تاريخ التصوير"],
+      label: ["Label", "الوصف"],
+      category: ["Reminder category", "نوع التذكير"],
+      local_time: ["Local time", "الوقت المحلي"],
+      weekdays: ["Weekdays", "أيام الأسبوع"],
+      enabled: ["Enabled", "مفعّل"],
+    };
+    if (Object.keys(labels).some((key) => key in data))
+      return (
+        <dl className="version-fields">
+          {Object.entries(labels)
+            .filter(([key]) => key in data)
+            .map(([key, text]) => (
+              <div key={key}>
+                <dt>{text[language === "ar" ? 1 : 0]}</dt>
+                <dd>{String(data[key] ?? "—")}</dd>
+              </div>
+            ))}
+        </dl>
+      );
     if (["name", "local_date", "effective_date"].some((key) => key in data))
       return <NutritionConflictFields data={data} language={language} />;
     if (
@@ -134,6 +159,18 @@ export function SyncPage() {
         <article className="surface sync-operation" key={op.idempotency_key}>
           <h2>{op.entity_type === "profile" ? t("profile") : copy.title}</h2>
           <p>{op.status === "pending" ? copy.pending : copy.attention}</p>
+          {op.code === "week_full" && (
+            <p>
+              {language === "ar"
+                ? "الأسبوع ممتلئ. عدّل المسودة إلى أسبوع آخر أو استبدل صورة مقبولة. الملف محفوظ."
+                : "This week is full. Edit the draft to another week or replace an accepted photo. Your file is retained."}
+            </p>
+          )}
+          {op.entity_type === "progress_photo" && op.status !== "pending" && (
+            <Link to="/app/progress">
+              {language === "ar" ? "مراجعة مسودة الصورة" : "Review photo draft"}
+            </Link>
+          )}
           {op.status !== "pending" && (
             <>
               <div className="conflict-versions">

@@ -1,0 +1,237 @@
+{
+  "info": {
+    "name": "TrainFuel Milestone 5 progress",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Run bootstrap/register/device before writes. For photo attachment first complete M2 media initiation/content/finalization for purpose progress and set ready_progress_asset_id. File bytes alone never accept a weekly photo."
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:18005/api"
+    },
+    {
+      "key": "device_id",
+      "value": "705eb480-9816-4f23-b283-239633346f13"
+    },
+    {
+      "key": "ready_progress_asset_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Bootstrap CSRF",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          }
+        ],
+        "url": "{{base_url}}/auth/csrf/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.environment.set(\"csrf_token\",pm.response.json().csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register isolated test account",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/auth/register/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"progress-{{$randomUUID}}@example.com\",\n  \"password\": \"Progress-postman-password!\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.environment.set(\"csrf_token\",pm.response.json().csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register device",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/sync/devices/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"device_id\": \"{{device_id}}\",\n  \"platform\": \"web\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Create weight_entry",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/sync/push/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"device_id\": \"{{device_id}}\",\n  \"operations\": [\n    {\n      \"idempotency_key\": \"{{$randomUUID}}\",\n      \"entity_id\": \"{{$randomUUID}}\",\n      \"entity_type\": \"weight_entry\",\n      \"action\": \"create\",\n      \"base_revision\": 0,\n      \"payload\": {\n        \"local_date\": \"2026-10-05\",\n        \"weight_kg\": \"80.125\",\n        \"notes\": \"Postman observation\"\n      }\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Accepted\",()=>pm.expect(pm.response.json().results[0].status).to.eql(\"accepted\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create reminder",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/sync/push/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"device_id\": \"{{device_id}}\",\n  \"operations\": [\n    {\n      \"idempotency_key\": \"{{$randomUUID}}\",\n      \"entity_id\": \"{{$randomUUID}}\",\n      \"entity_type\": \"reminder\",\n      \"action\": \"create\",\n      \"base_revision\": 0,\n      \"payload\": {\n        \"category\": \"weight\",\n        \"local_time\": \"09:00\",\n        \"weekdays\": [\n          1,\n          3,\n          5\n        ],\n        \"enabled\": false\n      }\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Accepted\",()=>pm.expect(pm.response.json().results[0].status).to.eql(\"accepted\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List owned weights",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          }
+        ],
+        "url": "{{base_url}}/progress/weights/?limit=50"
+      }
+    },
+    {
+      "name": "List owned photos",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          }
+        ],
+        "url": "{{base_url}}/progress/photos/?limit=50"
+      }
+    },
+    {
+      "name": "List owned reminders",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          }
+        ],
+        "url": "{{base_url}}/progress/reminders/?limit=50"
+      }
+    },
+    {
+      "name": "Snapshot all owned records",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          }
+        ],
+        "url": "{{base_url}}/sync/snapshot/?device_id={{device_id}}"
+      }
+    },
+    {
+      "name": "Manual attach finalized private photo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/sync/push/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"device_id\": \"{{device_id}}\",\n  \"operations\": [\n    {\n      \"idempotency_key\": \"{{$randomUUID}}\",\n      \"entity_id\": \"{{$randomUUID}}\",\n      \"entity_type\": \"progress_photo\",\n      \"action\": \"create\",\n      \"base_revision\": 0,\n      \"payload\": {\n        \"week_start\": \"2026-10-05\",\n        \"capture_date\": \"2026-10-06\",\n        \"asset_id\": \"{{ready_progress_asset_id}}\",\n        \"label\": \"Front\",\n        \"notes\": \"\"\n      }\n    }\n  ]\n}"
+        }
+      }
+    }
+  ]
+}
