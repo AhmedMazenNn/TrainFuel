@@ -6,7 +6,7 @@ This is the development backlog for the responsive website MVP, followed by the 
 
 - **Complete — setup:** Django/DRF scaffold, UUID email-based user foundation, PostgreSQL development service, initial infrastructure migrations, health endpoint, minimal React/TypeScript app, repository docs, and project skills.
 - **Preserved — design reference:** the original AI-generated UI is on `feature/generated-ui`. Its simulated sync, local storage, and sample screens do not count as completed product features.
-- **Planned:** every feature below. Update a feature's status when implementation starts and after its acceptance checks pass; record the pull request alongside it.
+- **Milestone 1:** implemented on `feature/milestone-1`; live Google and delivered email checks require external configuration. Remaining milestones are planned. Update a feature's status when implementation starts and after its acceptance checks pass; record the pull request alongside it.
 
 Start each feature from the latest `dev`, use the branch name below, and open a pull request into `dev`. Fixes use `fix/<short-description>` from `dev`. Keep `main` as the clean setup baseline until a reviewed promotion is explicitly requested. Do not merge the generated design automatically.
 
@@ -16,11 +16,11 @@ Dependencies below are feature IDs. Read each milestone top to bottom as the rec
 
 | ID | Branch | Depends on | Deliverable | Status |
 | --- | --- | --- | --- | --- |
-| F01 | `feature/accounts-profile` | Existing setup | Email/password registration, login, recovery, logout, transactional profile creation, and onboarding for display name, timezone, units, language, cutting/bulking goal, and optional height. | Planned |
-| F02 | `feature/google-sign-in` | F01 | Verified Google sign-in and explicit account linking to the existing account, with online-only recovery/linking behavior. | Planned |
-| F03 | `feature/web-shell` | F01 | Responsive navigation, authentication/onboarding screens, account settings, reusable accessible forms/dialogs, and translation/date/number helpers. Decide whether to adapt or redesign the generated UI before adopting its components. | Planned |
+| F01 | `feature/accounts-profile` | Existing setup | Email/password registration, login, recovery, logout, transactional profile creation, and onboarding for display name, timezone, units, language, cutting/bulking goal, and optional height. | Implemented on `feature/milestone-1`; review pending |
+| F02 | `feature/google-sign-in` | F01 | Verified Google sign-in and explicit account linking to the existing account, with online-only recovery/linking behavior. | Implemented/tested with fixtures; live Google setup pending |
+| F03 | `feature/web-shell` | F01 | Responsive navigation, authentication/onboarding screens, account settings, reusable accessible forms/dialogs, and translation/date/number helpers. Decide whether to adapt or redesign the generated UI before adopting its components. | Implemented on `feature/milestone-1`; review pending |
 
-**Acceptance:** profile and account records belong to the authenticated user; passwords use Django's facilities; linking cannot merge identities through unverified email text. Switching accounts reveals no previous user's data. Forms work with keyboards and narrow/wide layouts. English/Arabic and RTL remain a working assumption to confirm, rather than a newly confirmed requirement.
+**Acceptance:** profile and account records belong to the authenticated user; passwords use Django's facilities; linking cannot merge identities through unverified email text. Switching accounts reveals no previous user's data. Forms work with keyboards and narrow/wide layouts. English/Arabic and RTL are confirmed. The active shell uses a new responsive design; the original generated UI stays on its reference branch.
 
 ## Milestone 2 — Offline, synchronization, and media foundations
 
@@ -90,7 +90,7 @@ Schedule and estimate native work separately. The website release does not depen
 
 ## Decisions to settle before affected work
 
-- **Before F03/F08:** confirm English/Arabic scope, choose how to adapt/redesign the generated UI, and specify exercise translation fallback.
+- **Before F08:** specify exercise translation fallback. English/Arabic scope is confirmed, and Milestone 1 uses a fresh design.
 - **Before F01/F13/F16/F17:** retain or deliberately revise the PRD working defaults: kilograms, Monday–Sunday weeks, one tutorial URL per exercise, one weight measurement per date, and Start New Day opening today without locking history.
 - **Before F07/F08:** select storage/media processing and licensed exercise-media sources; confirm accepted formats and the proposed 10 MB original-photo limit.
 - **Before F20/F21:** confirm backup retention (proposed 30 days), production hosting, and measurable performance budgets against an agreed device/network environment.
@@ -105,4 +105,4 @@ These are tracked decisions, not requests to implement additional features. Auto
 4. No private payloads/secrets enter logs or commits. Destructive actions have an explicit recovery/confirmation path; missing data remains unknown rather than fabricated.
 5. Documentation and this roadmap reflect actual implementation status, the pull request is reviewed into `dev`, and any remaining limitation is recorded. Prototype demos alone do not satisfy acceptance.
 
-**Recommended next feature:** F01, `feature/accounts-profile`. Build accounts/profile first, then establish durable offline/sync foundations before developing the logging journeys.
+**Recommended next feature after Milestone 1 review:** F04, `feature/offline-storage`, then the sync foundation before logging journeys.

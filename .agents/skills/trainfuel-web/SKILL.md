@@ -7,9 +7,9 @@ description: Build or change TrainFuel's React website interfaces, editors, loca
 
 ## Ground the change
 
-Read the root [AGENTS.md](../../../AGENTS.md) and the affected functional requirements in [the PRD](../../../docs/prd.md). Sections 5, 7, and 11 define screen behavior and acceptance. The baseline frontend is a minimal scaffold. On `feature/generated-ui`, inspect the relevant prototype page, context, types, utilities, adapter, and translations before adopting or editing them.
+Read the root [AGENTS.md](../../../AGENTS.md) and the affected functional requirements in [the PRD](../../../docs/prd.md). Sections 5, 7, and 11 define screen behavior and acceptance. The frontend now includes bilingual account/recovery/onboarding/settings screens. On `feature/generated-ui`, inspect the relevant prototype page, context, types, utilities, adapter, and translations before adopting or editing them.
 
-Work in `frontend/` using its root package manifest. The generated reference lives in `frontend/prototype/` on its separate feature branch. When adopting that design, reuse useful React Router, context, component, and Tailwind boundaries; the baseline does not include these libraries. Put reusable calculations in pure utilities, persistence behind adapters, and rendering in components. Do not treat prototype camelCase types as an established server contract.
+Work in `frontend/` using its root package manifest. The generated reference lives in `frontend/prototype/` on its separate feature branch. When adopting that design, reuse useful React Router, context, component, and Tailwind boundaries; inspect the active frontend manifest before adopting additional libraries. Put reusable calculations in pure utilities, persistence behind adapters, and rendering in components. Do not treat prototype camelCase types as an established server contract.
 
 ## Domain behavior
 
@@ -22,13 +22,13 @@ Work in `frontend/` using its root package manifest. The generated reference liv
 
 ## Presentation and localization
 
-When adopting the prototype, use its `PreferencesContext` translation, number, and date helpers and translation dictionaries. Preserve English and Arabic copy and layout while recording bilingual scope as a PRD assumption. The existing English translation fallback is a UI convention; shared exercise translation fallback needs an explicit policy when that catalog is implemented. User-entered text stays as entered.
+When adopting the prototype, use its `PreferencesContext` translation, number, and date helpers and translation dictionaries. Preserve English and Arabic copy and layout with English/Arabic scope confirmed by the user. The existing English translation fallback is a UI convention; shared exercise translation fallback needs an explicit policy when that catalog is implemented. User-entered text stays as entered.
 
 Verify layouts in both directions and at narrow/wide widths. Reuse dialogs and fields with labels, validation messages, keyboard navigation, focus handling, and readable contrast. Respect reduced motion for animation/GIF presentation. Notification denial and missing offline media must leave other journeys usable.
 
 ## Acceptance checks
 
-Run frontend build and TypeScript checks as documented in AGENTS.md. The baseline has no lint script; the prototype has its own lint command. Exercise the changed journey and relevant scenarios:
+Run frontend build and TypeScript checks as documented in AGENTS.md. The active frontend has Playwright tests and no lint script; the prototype has its own lint command. Exercise the changed journey and relevant scenarios:
 
 - 150 g with 30 g protein records 30 g protein; meals of 200 and 300 kcal against 2,500 show 500 consumed and 2,000 remaining.
 - Unknown versus zero nutrients, incomplete drafts, over-target intake, empty days, and historical date/target corrections render accurately.

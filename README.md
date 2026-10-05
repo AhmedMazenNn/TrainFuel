@@ -1,6 +1,8 @@
 # TrainFuel
 
-A website-first workout, manual nutrition, and private progress tracker. This repository currently provides the application foundation; product journeys, offline sync, and private-media APIs are future development work. React Native apps are a later phase.
+A website-first workout, manual nutrition, and private progress tracker. The setup baseline is on `main`/`dev`; the accounts/profile APIs and modern English/Arabic web shell are implemented on `feature/milestone-1`. Offline sync, tracking journeys, and private-media APIs remain later work. React Native apps are a later phase.
+
+For authentication setup, endpoint contracts, and the Postman JSON files, see [Milestone 1 accounts/API documentation](docs/accounts-api.md).
 
 See the [feature roadmap](docs/feature-roadmap.md) for the planned milestones, branch names, dependencies, and acceptance criteria.
 
@@ -8,8 +10,8 @@ See the [feature roadmap](docs/feature-roadmap.md) for the planned milestones, b
 
 ```text
 .agents/skills/       Project-specific development guidance
-backend/             Django + DRF, UUID account foundation, PostgreSQL settings
-frontend/            Minimal React + TypeScript + Vite application
+backend/             Django + DRF accounts/profile APIs and PostgreSQL settings
+frontend/            React + TypeScript + Vite, bilingual account screens
 docs/prd.md          Product requirements and acceptance criteria
 docs/schema.dbml     Logical database model; not a deployable migration
 docs/diagrams/       Database diagram
@@ -83,9 +85,9 @@ Run commands from the repository root unless shown otherwise.
    backend/.venv/bin/python backend/manage.py runserver 127.0.0.1:8000
    ```
 
-   `http://127.0.0.1:8000/api/health/` returns `{"status":"ok"}` when the database is reachable, or HTTP 503 when unavailable. The migrations establish Django infrastructure and the UUID email-based user foundation; they do not implement all 27 DBML tables. Optionally create a local admin with `backend/.venv/bin/python backend/manage.py createsuperuser`.
+   `http://127.0.0.1:8000/api/health/` returns `{"status":"ok"}` when the database is reachable, or HTTP 503 when unavailable. The migrations establish Django infrastructure, UUID email-based users, profiles, and Google identities; they do not implement all 27 DBML tables. Optionally create a local admin with `backend/.venv/bin/python backend/manage.py createsuperuser`.
 
-4. In another terminal, start the minimal frontend:
+4. In another terminal, start the frontend:
 
    ```bash
    cd frontend
@@ -111,4 +113,4 @@ npm run typecheck
 npm run build
 ```
 
-This setup is for local development. Deployment configuration, production secrets/permissions, full domain schema, authentication APIs, synchronization, and private uploads remain separate feature work. Product rules and proposed defaults are documented in [the PRD](docs/prd.md); coding guidance lives in [AGENTS.md](AGENTS.md).
+This setup is for local development. Deployment configuration, production secrets/permissions, full domain schema, synchronization, and private uploads remain separate feature work. Google sign-in and email delivery need external configuration as documented above. Product rules and proposed defaults are documented in [the PRD](docs/prd.md); coding guidance lives in [AGENTS.md](AGENTS.md).

@@ -11,8 +11,8 @@ TrainFuel is a personal workout, manual nutrition, and private body-progress tra
 
 ## Current repository
 
-- `frontend/` is the minimal React 18, TypeScript, Vite scaffold, with no product UI or domain persistence yet. Its root manifest defines development commands.
-- `backend/` contains Django/DRF settings, PostgreSQL configuration, a UUID email-based account foundation, initial migrations, tests, and `/api/health/`. Domain APIs, profile provisioning, external identity linking, and the full 27-table schema are not implemented.
+- `frontend/` contains React/TypeScript/Vite account, recovery, onboarding, and settings screens with English/Arabic and RTL support. Persistent offline records are not implemented yet. Its root manifest defines development commands.
+- `backend/` contains Django/DRF settings, PostgreSQL configuration, UUID email-based accounts, profiles, verified Google identity linking, CSRF/session APIs, recovery, migrations, tests, and `/api/health/`. Live Google needs GOOGLE_CLIENT_ID and email delivery needs SMTP configuration. The full 27-table domain schema is not implemented.
 - `compose.yaml` provides PostgreSQL 16 on loopback port 5433 with a persistent volume. `.env.example` documents configuration; root `.env` contains local secrets and must stay untracked.
 - The original AI-generated UI is preserved only on `feature/generated-ui` under `frontend/prototype/`. It contains React/Tailwind components, domain contexts/types/utilities, English/Arabic translations, localStorage adapters, simulated sync, and data-URL photos with a 1.5 MB client limit. These are design references, not production guarantees.
 
@@ -56,7 +56,7 @@ npm run typecheck
 npm run build
 ```
 
-The build includes TypeScript checking. No frontend lint or automated behavior-test runner is configured in the minimal scaffold. Run backend checks from the repository root:
+The build includes TypeScript checking. No frontend lint script is configured; Playwright checks desktop/mobile account flows via `npm run test:e2e`. See docs/accounts-api.md for browser setup and Postman usage. Run backend checks from the repository root:
 
 ```bash
 backend/.venv/bin/python backend/manage.py check
@@ -66,4 +66,4 @@ backend/.venv/bin/python backend/manage.py test accounts config
 
 Tests require PostgreSQL and create a separate test database. For behavior changes, select meaningful scenarios from PRD section 11 and the relevant skill; report checks actually run and any blockers. Documentation-only changes require skill validation and reference review rather than application dependency installation. See [README.md](README.md) for setup.
 
-When adopting the prototype, preserve its English/Arabic translations and RTL behavior unless scope changes; bilingual scope is still a PRD assumption. Monday–Sunday weeks, one tutorial URL per exercise, one body-weight entry per day, 10 MB original photos, and 30-day backup retention are working defaults. Document their provisional status when making related decisions. Media sourcing/license rights and release performance budgets remain unresolved.
+When adopting the prototype, preserve its English/Arabic translations and RTL behavior unless scope changes; English/Arabic scope is confirmed by the user. Monday–Sunday weeks, one tutorial URL per exercise, one body-weight entry per day, 10 MB original photos, and 30-day backup retention are working defaults. Document their provisional status when making related decisions. Media sourcing/license rights and release performance budgets remain unresolved.

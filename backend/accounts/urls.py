@@ -1,0 +1,18 @@
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    path("auth/csrf/", views.CsrfView.as_view(), name="csrf"),
+    path("auth/register/", views.RegisterView.as_view(), name="register"),
+    path("auth/login/", views.LoginView.as_view(), name="login"),
+    path("auth/logout/", views.LogoutView.as_view(), name="logout"),
+    path("auth/me/", views.MeView.as_view(), name="me"),
+    path("auth/password-reset/", views.PasswordResetRequestView.as_view(), name="password-reset"),
+    path("auth/password-reset/confirm/", views.PasswordResetConfirmView.as_view(), name="password-reset-confirm"),
+    path("auth/google/config/", views.GoogleConfigView.as_view(), name="google-config"),
+    path("auth/google/challenge/", views.GoogleChallengeView.as_view(), name="google-challenge"),
+    path("auth/google/", views.GoogleLoginView.as_view(), name="google-login"),
+    path("auth/google/link/", views.GoogleLinkView.as_view(), name="google-link"),
+    path("profile/", views.ProfileView.as_view(), name="profile"),
+]

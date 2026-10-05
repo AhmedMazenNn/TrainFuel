@@ -1,5 +1,7 @@
 # Local configuration and secrets
 .env
+.local-emails/
+*.postman_environment.local.json
 .env.*
 !.env.example
 
@@ -20,6 +22,8 @@ backend/media/
 node_modules/
 dist/
 coverage/
+test-results/
+playwright-report/
 *.tsbuildinfo
 
 # Local tools and OS files

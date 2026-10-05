@@ -9,7 +9,7 @@ description: Implement or review TrainFuel account and domain APIs, authorizatio
 
 Read [AGENTS.md](../../../AGENTS.md), affected requirements in [the PRD](../../../docs/prd.md), and corresponding tables in [the DBML](../../../docs/schema.dbml). PRD sections 6, 9, and 11 define sync, engineering boundaries, and acceptance.
 
-The backend baseline contains a Django/DRF scaffold, PostgreSQL configuration, a UUID account model, and a health endpoint; domain APIs are not yet implemented. Before describing runnable services, inspect what has since been implemented. Treat Django/DRF/PostgreSQL as the proposed starting point; add infrastructure only within the requested work. Use Django authentication facilities for password hashing and recovery rather than implementing password cryptography from the diagram's `password_hash` field.
+The backend includes Django/DRF session/CSRF account APIs, transactional profiles, recovery, Google identity linking, PostgreSQL configuration, and a health endpoint. Exercise/nutrition/progress/sync/media APIs remain later work; live Google and email need external configuration. Before describing runnable services, inspect what has since been implemented. Treat Django/DRF/PostgreSQL as the proposed starting point; add infrastructure only within the requested work. Use Django authentication facilities for password hashing and recovery rather than implementing password cryptography from the diagram's `password_hash` field.
 
 ## Service and authorization boundaries
 
