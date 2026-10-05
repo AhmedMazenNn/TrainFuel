@@ -20,6 +20,7 @@ import { SyncProvider } from "./sync/SyncContext";
 import { SyncPage } from "./pages/SyncPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { PrivacyReceiptPage } from "./pages/PrivacyReceiptPage";
+import { TrainingPage } from "./training/TrainingPage";
 
 function Protected() {
   const { account, loading } = useAuth();
@@ -115,6 +116,7 @@ export function App() {
                     <Route path="/app/account" element={<AccountPage />} />
                     <Route path="/app/privacy" element={<PrivacyPage />} />
                     <Route path="/app/sync" element={<SyncPage />} />
+                    <Route path="/app/training" element={<TrainingPage />} />
                   </Route>
                 </Route>
               </Route>

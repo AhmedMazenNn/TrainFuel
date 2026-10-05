@@ -32,6 +32,11 @@ export interface StagedMedia {
   assetId?: string;
   ready?: boolean;
   error?: string;
+  domainEntityId?: string;
+  visibility?: "public" | "private";
+  source_url?: string;
+  license?: string;
+  rights_confirmed?: boolean;
 }
 interface Database extends DBSchema {
   meta: { key: string; value: unknown };
@@ -282,6 +287,11 @@ export async function applyRemote(
     for (const row of await tx.objectStore("entities").getAll())
       if (
         row.owner === owner &&
+        ![
+          "folder_download",
+          "exercise_cached_media",
+          "training_options",
+        ].includes(row.type) &&
         !queue.some(
           (op) => op.entity_type === row.type && op.entity_id === row.id,
         )
@@ -296,6 +306,39 @@ export async function applyRemote(
         op.entity_type === row.entity_type && op.entity_id === row.entity_id,
     );
     const serverData = row.action === "delete" ? null : row.data;
+    if (row.entity_type === "media_asset" && !serverData)
+      await tx
+        .objectStore("entities")
+        .delete([owner, "exercise_cached_media", row.entity_id]);
+    if (row.entity_type === "workout_order" && serverData && !pending) {
+      for (const folder of serverData.folders as {
+        id: string;
+        revision: number;
+        position: number;
+      }[]) {
+        const local = await tx
+          .objectStore("entities")
+          .get([owner, "workout_folder", folder.id]);
+        if (
+          local?.data &&
+          !queue.some(
+            (op) =>
+              op.entity_type === "workout_folder" && op.entity_id === folder.id,
+          )
+        )
+          await tx
+            .objectStore("entities")
+            .put({
+              ...local,
+              revision: folder.revision,
+              data: {
+                ...local.data,
+                revision: folder.revision,
+                position: folder.position,
+              },
+            });
+      }
+    }
     await tx.objectStore("entities").put({
       owner,
       type: row.entity_type,
@@ -368,6 +411,25 @@ export async function resolve(
         (choice === "local" && op.current ? 1 : 0),
     });
   if (choice === "local" && op.current) {
+    let payload = latest.payload;
+    if (op.entity_type === "workout_order") {
+      const remote = op.current.folders as { id: string; revision: number }[];
+      const local = latest.payload.folders as {
+        id: string;
+        revision: number;
+      }[];
+      const ordered = [
+        ...local
+          .filter((folder) => remote.some((item) => item.id === folder.id))
+          .map((folder) => remote.find((item) => item.id === folder.id)!),
+        ...remote.filter(
+          (folder) => !local.some((item) => item.id === folder.id),
+        ),
+      ];
+      payload = {
+        folders: ordered.map(({ id, revision }) => ({ id, revision })),
+      };
+    }
     await tx.objectStore("operations").put({
       ...latest,
       idempotency_key: crypto.randomUUID(),
@@ -376,6 +438,7 @@ export async function resolve(
       created: Date.now(),
       current: undefined,
       code: undefined,
+      payload,
     });
     if (account && op.entity_type === "profile")
       await tx.objectStore("accounts").put({

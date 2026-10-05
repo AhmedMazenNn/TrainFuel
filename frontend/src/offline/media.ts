@@ -23,7 +23,17 @@ export async function uploadStagedMedia(owner: string, id: string) {
       const result = await api<{ upload_id: string; asset_id: string }>(
         "/media/uploads/",
         "POST",
-        { purpose: staged.purpose },
+        {
+          purpose: staged.purpose,
+          visibility: staged.visibility ?? "private",
+          ...(staged.visibility === "public"
+            ? {
+                source_url: staged.source_url,
+                license: staged.license,
+                rights_confirmed: staged.rights_confirmed,
+              }
+            : {}),
+        },
       );
       staged = {
         ...staged,
