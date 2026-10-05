@@ -54,7 +54,9 @@ export function AppShell() {
           <NavLink to="/app/reminders">
             {language === "ar" ? "تذكيرات" : "Reminders"}
           </NavLink>
+          <NavLink to="/app/nutrition">{t("nutrition")}</NavLink>
           <NavLink to="/app/profile">{t("profile")}</NavLink>
+          <NavLink to="/app/training">{t("training")}</NavLink>
           <NavLink to="/app/account">{t("account")}</NavLink>
           <NavLink to="/app/sync">{copy.details}</NavLink>
         </nav>

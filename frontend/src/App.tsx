@@ -17,7 +17,9 @@ import { WorkspacePage } from "./pages/WorkspacePage";
 import { AccountPage } from "./pages/AccountPage";
 import "./styles.css";
 import { SyncProvider } from "./sync/SyncContext";
+import { NutritionPage } from "./nutrition/NutritionPage";
 import { SyncPage } from "./pages/SyncPage";
+import { TrainingPage } from "./training/TrainingPage";
 
 import { ProgressPage } from "./progress/ProgressPage";
 import { RemindersPage, ReminderScheduler } from "./progress/RemindersPage";
@@ -116,7 +118,9 @@ export function App() {
                     <Route path="/app/account" element={<AccountPage />} />
                     <Route path="/app/progress" element={<ProgressPage />} />
                     <Route path="/app/reminders" element={<RemindersPage />} />
+                    <Route path="/app/nutrition" element={<NutritionPage />} />
                     <Route path="/app/sync" element={<SyncPage />} />
+                    <Route path="/app/training" element={<TrainingPage />} />
                   </Route>
                 </Route>
               </Route>

@@ -6,6 +6,8 @@ For authentication setup, endpoint contracts, and the Postman JSON files, see [M
 
 See the [sync API](docs/sync-api.md), [media API](docs/media-api.md), [Milestone 2 Postman JSON](docs/postman/TrainFuel.milestone-2.postman_collection.json), and [integration contracts for Milestones 3 and 4](docs/integration/milestone-2.md).
 
+Training is available at `/app/training`: shared/private exercises, workout prescriptions, separate dated lifting history, and explicit offline folder/media downloads. See the [training API](docs/training-api.md), [Milestone 3 validation](docs/milestone-3-validation.md), and [training Postman collection](docs/postman/TrainFuel.milestone-3.postman_collection.json). Shared catalog content starts empty until an administrator supplies approved instructions/media.
+
 See the [feature roadmap](docs/feature-roadmap.md) for the planned milestones, branch names, dependencies, and acceptance criteria.
 
 ## Repository layout
@@ -108,7 +110,7 @@ Run commands from the repository root unless shown otherwise.
 ```bash
 backend/.venv/bin/python backend/manage.py check
 backend/.venv/bin/python backend/manage.py makemigrations --check --dry-run
-backend/.venv/bin/python backend/manage.py test accounts config sync media_assets
+backend/.venv/bin/python backend/manage.py test accounts config sync media_assets training
 ```
 
 Backend tests use PostgreSQL and create/remove a separate test database. The local container role supports this; an externally managed role needs test-database privileges.

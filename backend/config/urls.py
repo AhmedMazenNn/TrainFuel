@@ -9,5 +9,7 @@ urlpatterns = [
     path("api/", include("accounts.urls")),
     path("api/sync/", include("sync.urls")),
     path("api/progress/", include("progress.urls")),
+    path("api/nutrition/", include("nutrition.urls")),
     path("api/media/", include("media_assets.urls")),
+    path("api/training/", include("training.urls")),
 ]
