@@ -19,6 +19,8 @@ import "./styles.css";
 import { SyncProvider } from "./sync/SyncContext";
 import { NutritionPage } from "./nutrition/NutritionPage";
 import { SyncPage } from "./pages/SyncPage";
+import { PrivacyPage } from "./pages/PrivacyPage";
+import { PrivacyReceiptPage } from "./pages/PrivacyReceiptPage";
 import { TrainingPage } from "./training/TrainingPage";
 
 import { ProgressPage } from "./progress/ProgressPage";
@@ -106,6 +108,7 @@ export function App() {
                 path="/reset-password"
                 element={<AuthPage mode="reset" />}
               />
+              <Route path="/privacy/request" element={<PrivacyReceiptPage />} />
               <Route element={<Protected />}>
                 <Route element={<AppShell />}>
                   <Route
@@ -116,9 +119,10 @@ export function App() {
                     <Route path="/app" element={<WorkspacePage />} />
                     <Route path="/app/profile" element={<ProfilePage />} />
                     <Route path="/app/account" element={<AccountPage />} />
+                    <Route path="/app/privacy" element={<PrivacyPage />} />
+                    <Route path="/app/nutrition" element={<NutritionPage />} />
                     <Route path="/app/progress" element={<ProgressPage />} />
                     <Route path="/app/reminders" element={<RemindersPage />} />
-                    <Route path="/app/nutrition" element={<NutritionPage />} />
                     <Route path="/app/sync" element={<SyncPage />} />
                     <Route path="/app/training" element={<TrainingPage />} />
                   </Route>

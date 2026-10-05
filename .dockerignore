@@ -1,0 +1,11 @@
+.git
+.env
+.venv
+node_modules
+dist
+test-results
+playwright-report
+__pycache__
+*.py[cod]
+.private-media
+.local-emails

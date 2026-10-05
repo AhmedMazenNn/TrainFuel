@@ -57,8 +57,9 @@ export async function synchronize(owner: string) {
     const considered = new Set<string>();
     for (const queued of await operations(owner)) {
       considered.add(queued.idempotency_key);
-      let op = await database.get("operations", queued.idempotency_key);
-      if (!op) continue;
+      const current = await database.get("operations", queued.idempotency_key);
+      if (!current) continue;
+      let op = current;
       const entity = `${op.entity_type}:${op.entity_id}`;
       if (op.status !== "pending") {
         blocked.add(entity);

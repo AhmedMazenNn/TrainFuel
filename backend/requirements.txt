@@ -6,6 +6,7 @@ cffi==2.1.1
 charset-normalizer==3.5.2
 cryptography==50.0.2
 Django==6.1.1
+gunicorn==26.2.0
 django-storages==1.14.6
 djangorestframework==3.18.1
 google-auth==2.59.1

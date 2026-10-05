@@ -59,6 +59,14 @@ export function SyncPage() {
     URL.revokeObjectURL(url);
   }
   function version(data: Record<string, unknown>) {
+    if (
+      ["translations", "entries", "sets", "tutorial_url", "folders"].some(
+        (key) => key in data,
+      )
+    )
+      return <TrainingConflictVersion data={data} />;
+    if (["name", "local_date", "effective_date"].some((key) => key in data))
+      return <NutritionConflictFields data={data} language={language} />;
     const labels: Record<string, [string, string]> = {
       local_date: ["Recorded date", "تاريخ القياس"],
       weight_kg: ["Weight (kg)", "الوزن (كجم)"],
@@ -84,14 +92,6 @@ export function SyncPage() {
             ))}
         </dl>
       );
-    if (["name", "local_date", "effective_date"].some((key) => key in data))
-      return <NutritionConflictFields data={data} language={language} />;
-    if (
-      ["translations", "entries", "sets", "tutorial_url", "folders"].some(
-        (key) => key in data,
-      )
-    )
-      return <TrainingConflictVersion data={data} />;
     const fields = [
       ["display_name", "displayName"],
       ["timezone", "timezone"],
