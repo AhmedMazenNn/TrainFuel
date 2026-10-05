@@ -23,6 +23,9 @@ import { PrivacyPage } from "./pages/PrivacyPage";
 import { PrivacyReceiptPage } from "./pages/PrivacyReceiptPage";
 import { TrainingPage } from "./training/TrainingPage";
 
+import { ProgressPage } from "./progress/ProgressPage";
+import { RemindersPage, ReminderScheduler } from "./progress/RemindersPage";
+
 function Protected() {
   const { account, loading } = useAuth();
   const { t } = useLanguage();
@@ -92,6 +95,7 @@ export function App() {
         <SyncProvider>
           <BrowserRouter>
             <RouteFocus />
+            <ReminderScheduler />
             <Routes>
               <Route path="/" element={<Entry />} />
               <Route path="/login" element={<AuthPage mode="login" />} />
@@ -117,6 +121,8 @@ export function App() {
                     <Route path="/app/account" element={<AccountPage />} />
                     <Route path="/app/privacy" element={<PrivacyPage />} />
                     <Route path="/app/nutrition" element={<NutritionPage />} />
+                    <Route path="/app/progress" element={<ProgressPage />} />
+                    <Route path="/app/reminders" element={<RemindersPage />} />
                     <Route path="/app/sync" element={<SyncPage />} />
                     <Route path="/app/training" element={<TrainingPage />} />
                   </Route>

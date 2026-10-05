@@ -934,3 +934,131 @@ p {
   overflow-wrap: anywhere;
   font-weight: 600;
 }
+.progress-page {
+  display: grid;
+  gap: 24px;
+}
+.progress-columns,
+.progress-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.progress-page .settings-card {
+  padding: 24px;
+  background: white;
+  border: 1px solid #dfe8e2;
+  border-radius: 20px;
+  min-width: 0;
+}
+.progress-page form {
+  display: grid;
+  gap: 14px;
+}
+.progress-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+.progress-gallery article {
+  min-width: 0;
+}
+.progress-image {
+  width: 100%;
+  height: 240px;
+  object-fit: contain;
+  border-radius: 14px;
+  background: #edf2ee;
+}
+.progress-original {
+  max-width: 100%;
+  height: auto;
+}
+.progress-cache {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-block: 20px;
+}
+.progress-history {
+  list-style: none;
+  padding: 0;
+}
+.progress-history li {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border-block-end: 1px solid #e0e7e2;
+  padding-block: 14px;
+  flex-wrap: wrap;
+}
+.progress-history span {
+  flex: 1;
+  min-width: 150px;
+  overflow-wrap: anywhere;
+}
+.weight-chart {
+  width: 100%;
+  color: #197452;
+}
+.progress-page select {
+  width: 100%;
+  padding: 12px;
+  min-width: 0;
+  margin-block: 8px;
+}
+.progress-page button:not(.button) {
+  padding: 8px;
+  border: 1px solid #d7e2db;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+}
+.progress-mobile-toggle {
+  display: none;
+}
+.progress-zoom {
+  max-width: 90vw;
+  max-height: 90vh;
+  border: 0;
+  border-radius: 16px;
+}
+.progress-zoom::backdrop {
+  background: #10241cbd;
+}
+@media (max-width: 700px) {
+  .progress-columns,
+  .progress-comparison {
+    grid-template-columns: 1fr;
+  }
+  .progress-gallery {
+    grid-template-columns: 1fr;
+  }
+  .progress-mobile-toggle {
+    display: flex;
+    gap: 12px;
+  }
+  .progress-comparison article {
+    display: none;
+  }
+  .progress-comparison article.selected {
+    display: block;
+  }
+  .progress-page .settings-card {
+    padding: 18px;
+  }
+  .progress-page .page-heading h1 {
+    font-size: 2rem;
+  }
+}
+
+.progress-zoom-canvas {
+  overflow: auto;
+  max-height: 70vh;
+  width: min(75vw, 900px);
+}
+.progress-zoom-canvas .progress-original {
+  width: 100%;
+  max-width: none;
+}

@@ -198,6 +198,19 @@ export async function lockAccount(discard = false, logout = false) {
   );
   const owner = await tx.objectStore("meta").get("active");
   await tx.objectStore("meta").delete("active");
+  if (typeof owner === "string")
+    await tx
+      .objectStore("meta")
+      .put(
+        Number(
+          (await tx.objectStore("meta").get(`photo-epoch:${owner}`)) || 0,
+        ) + 1,
+        `photo-epoch:${owner}`,
+      );
+  if (typeof owner === "string")
+    for (const key of await tx.objectStore("meta").getAllKeys())
+      if (key.startsWith(`photo:${owner}:`))
+        await tx.objectStore("meta").delete(key);
   if (logout) await tx.objectStore("meta").put(true, "logout-pending");
   if (typeof owner === "string" && discard) {
     for (const name of ["operations", "drafts", "media"] as const) {
@@ -338,6 +351,23 @@ export async function applyRemote(
               },
             });
       }
+    }
+    if (
+      row.entity_type === "progress_photo" &&
+      existing?.data?.asset_id &&
+      (row.action === "delete" || existing.data.asset_id !== row.data?.asset_id)
+    ) {
+      await tx
+        .objectStore("meta")
+        .put(
+          Number(
+            (await tx.objectStore("meta").get(`photo-epoch:${owner}`)) || 0,
+          ) + 1,
+          `photo-epoch:${owner}`,
+        );
+      for (const key of await tx.objectStore("meta").getAllKeys())
+        if (key.startsWith(`photo:${owner}:${existing.data.asset_id}:`))
+          await tx.objectStore("meta").delete(key);
     }
     await tx.objectStore("entities").put({
       owner,
