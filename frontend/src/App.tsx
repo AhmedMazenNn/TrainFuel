@@ -18,6 +18,7 @@ import { AccountPage } from "./pages/AccountPage";
 import "./styles.css";
 import { SyncProvider } from "./sync/SyncContext";
 import { SyncPage } from "./pages/SyncPage";
+import { TrainingPage } from "./training/TrainingPage";
 
 function Protected() {
   const { account, loading } = useAuth();
@@ -111,6 +112,7 @@ export function App() {
                     <Route path="/app/profile" element={<ProfilePage />} />
                     <Route path="/app/account" element={<AccountPage />} />
                     <Route path="/app/sync" element={<SyncPage />} />
+                    <Route path="/app/training" element={<TrainingPage />} />
                   </Route>
                 </Route>
               </Route>

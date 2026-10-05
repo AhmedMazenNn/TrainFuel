@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "accounts",
     "sync",
     "media_assets",
+    "training",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
