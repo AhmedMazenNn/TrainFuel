@@ -70,6 +70,7 @@ jobs:
       POSTGRES_PORT: 5432
       TRAINFUEL_API_PORT: 8000
       TRAINFUEL_WEB_PORT: 5173
+      TRAINFUEL_PYTHON: python
       CI: "true"
     steps:
       - uses: actions/checkout@v4
