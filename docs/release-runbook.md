@@ -4,10 +4,10 @@
 
 1. Provision a host with Docker Compose, a domain, and an HTTPS reverse proxy/load balancer. Terminate TLS there and forward `X-Forwarded-Proto: https`; the proxy must not expose the database, API, or media volume directly.
 2. Copy `.env.production.example` to `.env`, generate a new Django secret and database password, and configure the production host, HTTPS CSRF origin, SMTP relay, and optional Google client. Keep `.env` and all encryption identities out of Git and image layers.
-3. Review Compose resource limits, disk monitoring, firewall rules, SMTP delivery, and storage capacity for the target host. Start with `docker compose up --build -d`; API startup applies migrations and collects static assets. Check `/api/health/` and exercise account, export, deletion, private-media, offline recovery, and RTL journeys on staging before release.
+3. Review Compose resource limits, disk monitoring, firewall rules, SMTP delivery, and storage capacity for the target host. Start with `docker compose -f docker-compose.yml up --build -d`; API startup applies migrations and collects static assets. Check `/api/health/` and exercise account, export, deletion, private-media, offline recovery, and RTL journeys on staging before release.
 4. Configure an S3-compatible private bucket by setting `MEDIA_STORAGE_BACKEND=s3`, `MEDIA_S3_BUCKET`, optional endpoint/region, and the platform's private bucket credentials. Keep public ACLs disabled. The default Compose media is private to the mounted volume.
 
-Compose binds only the web container to the host. The PostgreSQL service, API, and privacy worker share an internal Compose network; persistent database and private media volumes are separate. Put a rate-limited HTTPS proxy in front of the web port and set an explicit host firewall.
+The production Compose file is named explicitly because the repository also has `compose.yaml` for local PostgreSQL development. It binds only the web container to the host. PostgreSQL, API, and the privacy worker share a private Compose network; persistent database, static assets, and private media volumes are separate. Nginx and Gunicorn request access logs are disabled, and the application ships no analytics SDK. Keep error logs private, set bounded host/container log retention, and avoid request-body logging. Put a rate-limited HTTPS proxy in front of the web port and set an explicit host firewall.
 
 ## Backups and restore
 

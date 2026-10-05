@@ -1,14 +1,16 @@
 # TrainFuel
 
-A website-first workout, manual nutrition, and private progress tracker. The setup baseline is on `main`/`dev`; accounts and the modern English/Arabic web shell are on `feature/milestone-1`. `feature/milestone-2` adds durable offline profile saves, real synchronization/conflicts, and private-media foundations. Tracking journeys and React Native apps remain later work.
+A website-first workout, manual nutrition, and private progress tracker. Accounts, offline synchronization, training, nutrition, progress, privacy controls, and a production deployment skeleton are integrated on `feature/milestone-6`. React Native remains a later phase. The release still requires staging checks for the live host, media rights, performance budgets, and an executed backup restore.
 
 For authentication setup, endpoint contracts, and the Postman JSON files, see [Milestone 1 accounts/API documentation](docs/accounts-api.md).
 
-See the [sync API](docs/sync-api.md), [media API](docs/media-api.md), [Milestone 2 Postman JSON](docs/postman/TrainFuel.milestone-2.postman_collection.json), and [integration contracts for Milestones 3 and 4](docs/integration/milestone-2.md).
+See the [sync API](docs/sync-api.md), [media API](docs/media-api.md), and [Milestone 2 integration contracts](docs/integration/milestone-2.md).
 
 Training is available at `/app/training`: shared/private exercises, workout prescriptions, separate dated lifting history, and explicit offline folder/media downloads. See the [training API](docs/training-api.md), [Milestone 3 validation](docs/milestone-3-validation.md), and [training Postman collection](docs/postman/TrainFuel.milestone-3.postman_collection.json). Shared catalog content starts empty until an administrator supplies approved instructions/media.
 
-See the [feature roadmap](docs/feature-roadmap.md) for the planned milestones, branch names, dependencies, and acceptance criteria.
+Nutrition is available at `/app/nutrition`; progress, private photos, comparison, and reminders are at `/app/progress` and `/app/reminders`. Account export and deletion controls are at `/app/privacy`. Their APIs and Postman collections are documented in [nutrition](docs/nutrition-api.md), [progress](docs/progress-api.md), [privacy](docs/postman/TrainFuel.privacy.postman_collection.json), and [training](docs/training-api.md).
+
+See the [feature roadmap](docs/feature-roadmap.md) for milestone status and acceptance criteria. See the [release runbook](docs/release-runbook.md) for production Compose deployment, private storage, and backup/restore procedures.
 
 ## Repository layout
 
@@ -20,6 +22,7 @@ docs/prd.md          Product requirements and acceptance criteria
 docs/schema.dbml     Logical database model; not a deployable migration
 docs/diagrams/       Database diagram
 compose.yaml         Local PostgreSQL service and persistent volume
+docker-compose.yml   Production web/API/PostgreSQL/private-media stack
 AGENTS.md            Contributor/agent rules and branch workflow
 ```
 
@@ -66,8 +69,8 @@ Run commands from the repository root unless shown otherwise.
 2. Start PostgreSQL:
 
    ```bash
-   docker compose up -d db
-   docker compose ps
+   docker compose -f compose.yaml up -d db
+   docker compose -f compose.yaml ps
    ```
 
    On Linux with Podman and the Docker Compose compatibility provider, start the user socket and point Compose at it:
@@ -75,7 +78,7 @@ Run commands from the repository root unless shown otherwise.
    ```bash
    systemctl --user start podman.socket
    export DOCKER_HOST="unix://${XDG_RUNTIME_DIR}/podman/podman.sock"
-   docker compose up -d db
+   docker compose -f compose.yaml up -d db
    ```
 
    Wait for the database to become healthy. The named volume retains data when the service stops. After initialization, changing credentials in `.env` does not change an existing database role automatically.

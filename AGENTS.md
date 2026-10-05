@@ -16,7 +16,7 @@ TrainFuel is a personal workout, manual nutrition, and private body-progress tra
 - `training` adds owner-authorized shared/private exercise aggregates, private tutorial annotations, ordered folder prescriptions, separate dated lifting records, revisioned atomic folder ordering, and explicit account-scoped offline media downloads. Read [training API](docs/training-api.md) for sync and lifecycle hooks. Catalog media rights remain an external content requirement.
 - `nutrition` provides manual nutrition targets, daily snapshots, food logging, history, and canonical-day reconciliation. Read [nutrition API](docs/nutrition-api.md) for sync and lifecycle hooks.
 - `progress` adds weight history, weekly private photos, comparisons and best-effort reminders, with domain sync adapters. Read [progress API](docs/progress-api.md) for photo slot/cache/lifecycle integration.
-- `compose.yaml` provides PostgreSQL 16 on loopback port 5433 with a persistent volume. `.env.example` documents configuration; root `.env` contains local secrets and must stay untracked.
+- `compose.yaml` provides PostgreSQL 16 on loopback port 5433 for local development. `docker-compose.yml` provides the production API, web, database, media, and privacy-worker stack. Use `-f` explicitly because both files are present. `.env.example` and `.env.production.example` are templates; `.env` contains local secrets and stays untracked.
 - The original AI-generated UI is preserved only on `feature/generated-ui` under `frontend/prototype/`. It contains React/Tailwind components, domain contexts/types/utilities, English/Arabic translations, localStorage adapters, simulated sync, and data-URL photos with a 1.5 MB client limit. These are design references, not production guarantees.
 
 ## Branch workflow

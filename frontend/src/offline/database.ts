@@ -213,17 +213,32 @@ export async function lockAccount(discard = false, logout = false) {
         await tx.objectStore("meta").delete(key);
   if (logout) await tx.objectStore("meta").put(true, "logout-pending");
   if (typeof owner === "string" && discard) {
+    const removedOperations = new Set<string>();
     for (const name of ["operations", "drafts", "media"] as const) {
-      for (const row of await tx.objectStore(name).index("owner").getAll(owner))
+      for (const row of await tx
+        .objectStore(name)
+        .index("owner")
+        .getAll(owner)) {
+        if ("idempotency_key" in row)
+          removedOperations.add(row.idempotency_key);
         await tx
           .objectStore(name)
           .delete("idempotency_key" in row ? row.idempotency_key : row.id);
+      }
     }
     await tx.objectStore("accounts").delete(owner);
     for (const row of await tx.objectStore("entities").getAll())
       if (row.owner === owner)
         await tx.objectStore("entities").delete([owner, row.type, row.id]);
     await tx.objectStore("meta").delete(`cursor:${owner}`);
+    for (const key of await tx.objectStore("meta").getAllKeys())
+      if (
+        key === `photo-epoch:${owner}` ||
+        key === `photos-cache:${owner}` ||
+        key.startsWith(`reminder-fired:${owner}:`) ||
+        [...removedOperations].some((id) => key === `photo-staged:${id}`)
+      )
+        await tx.objectStore("meta").delete(key);
   }
   await tx.done;
   changed();
@@ -269,7 +284,9 @@ export async function clearErasedAccount(owner: string) {
         ((key === `active` && cursor.value === owner) ||
           key === `cursor:${owner}` ||
           key === `device:${owner}` ||
+          key === `photo-epoch:${owner}` ||
           key === `photos-cache:${owner}` ||
+          key.startsWith(`reminder-fired:${owner}:`) ||
           [...removedOperations].some((id) => key === `photo-staged:${id}`) ||
           key.startsWith(`photo:${owner}:`));
       if (ownerMatches || metaMatches) await cursor.delete();
@@ -339,17 +356,15 @@ export async function applyRemote(
               op.entity_type === "workout_folder" && op.entity_id === folder.id,
           )
         )
-          await tx
-            .objectStore("entities")
-            .put({
-              ...local,
+          await tx.objectStore("entities").put({
+            ...local,
+            revision: folder.revision,
+            data: {
+              ...local.data,
               revision: folder.revision,
-              data: {
-                ...local.data,
-                revision: folder.revision,
-                position: folder.position,
-              },
-            });
+              position: folder.position,
+            },
+          });
       }
     }
     if (

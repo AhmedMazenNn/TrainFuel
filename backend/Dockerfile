@@ -8,4 +8,4 @@ COPY . .
 RUN useradd --system --uid 10001 --create-home app && mkdir -p /app/staticfiles && chown -R app:app /app
 USER app
 EXPOSE 8000
-CMD ["gunicorn", "config.wsgi:application", "--bind=0.0.0.0:8000", "--workers=3", "--timeout=60", "--access-logfile=-", "--error-logfile=-"]
+CMD ["gunicorn", "config.wsgi:application", "--bind=0.0.0.0:8000", "--workers=3", "--timeout=60", "--error-logfile=-"]

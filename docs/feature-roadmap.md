@@ -41,11 +41,11 @@ Review: [Milestone 2 draft PR #1](https://github.com/AhmedMazenNn/TrainFuel/pull
 
 | ID | Branch | Depends on | Deliverable | Status |
 | --- | --- | --- | --- | --- |
-| F08 | `feature/exercise-catalog-admin` | F03, F05, F07 | Shared exercises, ordered translated instructions, muscles/equipment/category, search/filtering, licensed image/GIF media, admin create/edit/archive, and metadata audit. | Planned |
-| F09 | `feature/private-exercises` | F08 | Owned custom exercises with optional private media and separate owner-only HTTPS tutorial annotations for shared/custom exercises. | Planned |
-| F10 | `feature/workout-folders` | F09 | Unlimited paginated folders, rename/duplicate/reorder/delete, repeated ordered exercise selections, and independently ordered weight/repetition prescriptions. | Planned |
-| F11 | `feature/exercise-records` | F10 | Editable dated performed/reference records, individual sets, previous-lift history, optional folder context, and explicit copying of records into prescriptions. | Planned |
-| F12 | `feature/offline-downloads` | F08, F10, F04, F06 | Explicit folder downloads, cached catalog metadata/media, completion/storage reporting, bounded cache management, and uncached/missing-media fallbacks. | Planned |
+| F08 | `feature/exercise-catalog-admin` | F03, F05, F07 | Shared exercises, ordered translated instructions, muscles/equipment/category, search/filtering, licensed image/GIF media, admin create/edit/archive, and metadata audit. | Implemented on `feature/milestone-3-parallel`; 55 backend tests, six browser tests, and Postman checks passed |
+| F09 | `feature/private-exercises` | F08 | Owned custom exercises with optional private media and separate owner-only HTTPS tutorial annotations for shared/custom exercises. | Implemented on `feature/milestone-3-parallel`; integration checked |
+| F10 | `feature/workout-folders` | F09 | Unlimited paginated folders, rename/duplicate/reorder/delete, repeated ordered exercise selections, and independently ordered weight/repetition prescriptions. | Implemented on `feature/milestone-3-parallel`; integration checked |
+| F11 | `feature/exercise-records` | F10 | Editable dated performed/reference records, individual sets, previous-lift history, optional folder context, and explicit copying of records into prescriptions. | Implemented on `feature/milestone-3-parallel`; integration checked |
+| F12 | `feature/offline-downloads` | F08, F10, F04, F06 | Explicit folder downloads, cached catalog metadata/media, completion/storage reporting, bounded cache management, and uncached/missing-media fallbacks. | Implemented on `feature/milestone-3-parallel`; integration checked |
 
 **Acceptance:** archived exercises remain readable in history but cannot be newly selected. Each user sees only their tutorial annotation. Repeated folder exercises and distinct planned sets persist accurately. Recording/editing sets never silently changes prescriptions or requires a workout-completion workflow. Folder deletion preserves lifting history. Reorder and set-edit conflicts are recoverable across devices; cached instructions work offline and missing media has an honest fallback.
 
@@ -53,9 +53,9 @@ Review: [Milestone 2 draft PR #1](https://github.com/AhmedMazenNn/TrainFuel/pull
 
 | ID | Branch | Depends on | Deliverable | Status |
 | --- | --- | --- | --- | --- |
-| F13 | `feature/nutrition-targets-days` | F03, F05, F06 | Manual calorie/macro targets with effective dates, independent daily snapshots, one active day per owner/local date, and Start New Day without clearing or locking history. | Planned |
-| F14 | `feature/food-logging-dashboard` | F13 | Portion-based food entry, complete/incomplete drafts, optional source/notes, editable/copyable entries, and consumed/target/remaining counters for each nutrient. | Planned |
-| F15 | `feature/nutrition-history` | F14 | Calendar/day selection, historical entry/date/target corrections, weekly summaries with explicit denominators, and nutrition-versus-target charts with numeric alternatives. | Planned |
+| F13 | `feature/nutrition-targets-days` | F03, F05, F06 | Manual calorie/macro targets with effective dates, independent daily snapshots, one active day per owner/local date, and Start New Day without clearing or locking history. | Implemented on `feature/milestone-4`; 13 domain backend tests, 10 browser tests, and 18-request Postman run passed |
+| F14 | `feature/food-logging-dashboard` | F13 | Portion-based food entry, complete/incomplete drafts, optional source/notes, editable/copyable entries, and consumed/target/remaining counters for each nutrient. | Implemented on `feature/milestone-4`; integration checked |
+| F15 | `feature/nutrition-history` | F14 | Calendar/day selection, historical entry/date/target corrections, weekly summaries with explicit denominators, and nutrition-versus-target charts with numeric alternatives. | Implemented on `feature/milestone-4`; integration checked |
 
 **Acceptance:** entering 150 g and 30 g protein records 30 g protein. Adding 200 and 300 kcal against 2,500 shows 500 consumed and 2,000 remaining; 2,600 shows 100 over. Unknown nutrients are distinct from zero and make totals partial. Repeated Start New Day taps reuse today's log. Two offline devices starting the same date retain both sets of food entries on one server day. Moving an entry updates both dates; target/timezone changes do not silently rewrite history. Future food logs remain outside MVP.
 
@@ -74,8 +74,8 @@ Review: [Milestone 2 draft PR #1](https://github.com/AhmedMazenNn/TrainFuel/pull
 
 | ID | Branch | Depends on | Deliverable | Status |
 | --- | --- | --- | --- | --- |
-| F20 | `feature/account-privacy-lifecycle` | F12, F15, F18, F19 | Personal data export with separate photo opt-in, authenticated account deletion, tracked database/media cleanup, cache/reminder cleanup, and explicit handling of disconnected devices and pending work. | Planned |
-| F21 | `feature/website-release-readiness` | F02, F11, F12, F15, F18, F19, F20 | Cross-journey browser tests, ownership/concurrency/recovery checks, accessibility/RTL checks as applicable, measured performance budgets, staging/production configuration, private telemetry controls, backups, and demonstrated restore. | Planned |
+| F20 | `feature/account-privacy-lifecycle` | F12, F15, F18, F19 | Personal data export with separate photo opt-in, authenticated account deletion, tracked database/media cleanup, cache/reminder cleanup, and explicit handling of disconnected devices and pending work. | Implemented on `feature/milestone-6`; four privacy backend tests and four desktop/mobile browser checks passed |
+| F21 | `feature/website-release-readiness` | F02, F11, F12, F15, F18, F19, F20 | Cross-journey browser tests, ownership/concurrency/recovery checks, accessibility/RTL checks as applicable, measured performance budgets, staging/production configuration, private telemetry controls, backups, and demonstrated restore. | Compose images build; CI and encrypted backup/restore tooling implemented. Integrated checks passed: 81 backend and 44 browser tests. Live staging/performance budget, media-rights review, and demonstrated production-like restore remain release gates. |
 
 **Release gate:** all website MVP journeys and PRD section 11 scenarios pass. Media rights are resolved; actual retention/deletion behavior is documented; backup restoration is demonstrated. Offline restart/reconnect, logout/account switching, historical edits, rejected uploads, and private-media authorization are tested together. Background sync and browser-closed reminders are never represented as guaranteed delivery. The full domain schema is delivered incrementally through these features, not by treating DBML as executable SQL.
 
