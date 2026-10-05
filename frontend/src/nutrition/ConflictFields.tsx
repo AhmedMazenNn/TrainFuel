@@ -52,3 +52,28 @@ export function NutritionConflictFields({
     </dl>
   );
 }
+
+export function nutritionConflictMessage(
+  code: string | undefined,
+  language: Language,
+) {
+  const messages: Record<string, Record<Language, string>> = {
+    effective_date_exists: {
+      en: "A schedule already exists for this date. Your values remain saved. Recover this version as a draft, then open the existing schedule to make an explicit correction.",
+      ar: "يوجد جدول أهداف لهذا التاريخ. تبقى قيمك محفوظة. استعد هذه النسخة كمسودة ثم افتح الجدول الموجود لتصحيحه صراحةً.",
+    },
+    future_day: {
+      en: "Future food dates are outside this release. Recover your saved values as a draft for an eligible date.",
+      ar: "تواريخ الطعام المستقبلية خارج هذا الإصدار. استعد القيم المحفوظة كمسودة لتاريخ مسموح.",
+    },
+    invalid_payload: {
+      en: "Some fields need correction. Your local values remain recoverable as a draft.",
+      ar: "تحتاج بعض الحقول إلى تصحيح. تبقى قيمك المحلية قابلة للاستعادة كمسودة.",
+    },
+    invalid_day: {
+      en: "The selected day is unavailable. Recover the saved food as a new draft on an active day.",
+      ar: "اليوم المحدد غير متاح. استعد الطعام المحفوظ كمسودة جديدة في يوم متاح.",
+    },
+  };
+  return code ? messages[code]?.[language] : undefined;
+}

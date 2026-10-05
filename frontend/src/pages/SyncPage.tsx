@@ -1,4 +1,7 @@
-import { NutritionConflictFields } from "../nutrition/ConflictFields";
+import {
+  NutritionConflictFields,
+  nutritionConflictMessage,
+} from "../nutrition/ConflictFields";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -133,7 +136,14 @@ export function SyncPage() {
                 </div>
                 <div>
                   <h3>{copy.server}</h3>
-                  {op.current ? version(op.current) : <p>{copy.deleted}</p>}
+                  {op.current ? (
+                    version(op.current)
+                  ) : (
+                    <p>
+                      {nutritionConflictMessage(op.code, language) ??
+                        copy.deleted}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="sync-actions">
