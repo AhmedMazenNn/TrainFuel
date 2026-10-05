@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "sync",
     "media_assets",
     "nutrition",
+    "training",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

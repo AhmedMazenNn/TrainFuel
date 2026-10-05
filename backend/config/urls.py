@@ -10,4 +10,5 @@ urlpatterns = [
     path("api/sync/", include("sync.urls")),
     path("api/nutrition/", include("nutrition.urls")),
     path("api/media/", include("media_assets.urls")),
+    path("api/training/", include("training.urls")),
 ]

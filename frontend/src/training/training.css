@@ -1,0 +1,253 @@
+.training-page {
+  max-width: 1240px;
+  margin-inline: auto;
+}
+.training-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-block: 2rem;
+}
+.training-tabs button {
+  border: 1px solid #d9e5df;
+  background: white;
+  border-radius: 100px;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  color: #3c5448;
+}
+.training-tabs button.active {
+  background: #163d2e;
+  color: white;
+  border-color: #163d2e;
+}
+.training-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-block: 1.5rem;
+}
+.training-toolbar .field {
+  flex: 1;
+  min-width: 180px;
+  max-width: 400px;
+}
+.training-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-block: 1.5rem;
+}
+.training-page select,
+.training-dialog select,
+.training-dialog textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #bdcec3;
+  border-radius: 10px;
+  font: inherit;
+  color: #163d2e;
+  background: white;
+}
+.training-dialog textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+.training-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+.exercise-card {
+  overflow: hidden;
+  padding: 0;
+}
+.exercise-card-body {
+  padding: 1.5rem;
+}
+.exercise-card h2 {
+  margin-top: 1rem;
+}
+.exercise-card details {
+  margin-block: 1rem;
+}
+.exercise-card summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.exercise-card li {
+  margin-block: 0.6rem;
+}
+.exercise-media-fallback {
+  background: linear-gradient(130deg, #e5f4e9, #f8f6ed);
+  padding: 1.5rem;
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.exercise-media-fallback span {
+  font-size: 3rem;
+  color: #297853;
+}
+.exercise-media-fallback p {
+  max-width: 260px;
+}
+.exercise-image {
+  width: 100%;
+  height: 220px;
+  object-fit: contain;
+  background: #edf5ef;
+}
+.training-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-block: 0.8rem;
+}
+.training-actions > button:not(.button) {
+  border: 1px solid #bdcec3;
+  border-radius: 8px;
+  background: white;
+  padding: 0.55rem 0.8rem;
+  cursor: pointer;
+}
+.training-empty {
+  padding: 3rem;
+  border: 1px dashed #aebfb4;
+  border-radius: 20px;
+  text-align: center;
+}
+.folder-card,
+.training-history {
+  padding: 1.5rem;
+  margin-block: 1rem;
+}
+.folder-entry {
+  padding: 1rem;
+  border-block-start: 1px solid #e2ece5;
+}
+.set-list {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding-inline-start: 1.5rem;
+}
+.set-list li {
+  padding: 0.5rem 1rem;
+  margin-inline-end: 1.2rem;
+  background: #eff7f1;
+  border-radius: 8px;
+}
+.training-download {
+  border-block-start: 1px solid #e2ece5;
+  margin-block-start: 1rem;
+  padding-block-start: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.training-dialog {
+  border: 0;
+  border-radius: 24px;
+  padding: 2rem;
+  width: min(740px, calc(100vw - 2rem));
+  max-height: 90vh;
+  overflow: auto;
+  color: #163d2e;
+  box-shadow: 0 20px 80px #0003;
+}
+.training-dialog::backdrop {
+  background: #102e25a8;
+}
+.training-dialog fieldset {
+  border: 1px solid #d8e5dc;
+  border-radius: 14px;
+  margin-block: 1rem;
+  padding: 1rem;
+}
+.training-dialog legend {
+  font-weight: 700;
+}
+.training-dialog .field {
+  margin-block: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.training-check {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.training-check input {
+  width: 18px;
+  height: 18px;
+}
+.training-set {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.training-set .training-actions {
+  grid-column: 1/-1;
+}
+.training-form-actions {
+  position: sticky;
+  bottom: -2rem;
+  background: white;
+  padding-block: 1rem;
+  margin-block-end: 0;
+}
+.training-staged {
+  padding: 1rem;
+  background: #fff6df;
+  border-radius: 12px;
+}
+.training-page .status-pill {
+  white-space: normal;
+}
+.training-page h2,
+.training-page h3 {
+  overflow-wrap: anywhere;
+}
+.app-header nav {
+  flex-wrap: wrap;
+}
+@media (max-width: 700px) {
+  .training-grid {
+    grid-template-columns: 1fr;
+  }
+  .training-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+  .training-dialog {
+    padding: 1.1rem;
+  }
+  .training-dialog fieldset {
+    padding: 0.7rem;
+  }
+  .training-toolbar .field {
+    max-width: none;
+  }
+  .training-form-actions {
+    bottom: -1.1rem;
+  }
+  .folder-card,
+  .training-history {
+    padding: 1rem;
+  }
+  .training-actions .button {
+    padding: 0.65rem 0.85rem;
+  }
+  .training-set {
+    grid-template-columns: 1fr;
+  }
+  .training-dialog .training-set .training-actions {
+    grid-column: auto;
+  }
+}

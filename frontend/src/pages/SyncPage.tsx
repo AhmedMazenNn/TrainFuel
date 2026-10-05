@@ -11,6 +11,7 @@ import { syncCopy } from "../sync/copy";
 import { changed, db, resolve, type StagedMedia } from "../offline/database";
 import { uploadStagedMedia } from "../offline/media";
 import { Message } from "../components/Primitives";
+import { TrainingConflictVersion } from "../training/ConflictVersion";
 export function SyncPage() {
   const { account, sessionValid } = useAuth(),
     { language, t } = useLanguage(),
@@ -60,6 +61,12 @@ export function SyncPage() {
   function version(data: Record<string, unknown>) {
     if (["name", "local_date", "effective_date"].some((key) => key in data))
       return <NutritionConflictFields data={data} language={language} />;
+    if (
+      ["translations", "entries", "sets", "tutorial_url", "folders"].some(
+        (key) => key in data,
+      )
+    )
+      return <TrainingConflictVersion data={data} />;
     const fields = [
       ["display_name", "displayName"],
       ["timezone", "timezone"],

@@ -1,0 +1,713 @@
+{
+  "info": {
+    "name": "TrainFuel — Milestone 3 training",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Disposable test accounts; start a clean cookie jar. Exercises, prescriptions, history, tutorial ownership, revisions, and deletion."
+  },
+  "variable": [
+    {
+      "key": "api_base",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "csrf_token",
+      "value": ""
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if(pm.info.requestName === \"Get CSRF\") { for (const key of [\"run_id\",\"set1\",\"set2\",\"set3\",\"entry_id\",\"record_set\"]) pm.collectionVariables.set(key,pm.variables.replaceIn(\"{{$guid}}\")); }"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Get CSRF",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          }
+        ],
+        "url": "{{api_base}}/api/auth/csrf/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(200));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register disposable training owner",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{api_base}}/api/auth/register/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"training-{{run_id}}@example.com\",\n  \"password\": \"Training-postman-test-password!\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(201));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Controlled codes",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          }
+        ],
+        "url": "{{api_base}}/api/training/options/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(200));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create owned exercise",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{api_base}}/api/training/exercises/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"visibility\": \"private\",\n  \"category\": \"strength\",\n  \"equipment\": \"dumbbell\",\n  \"archived\": false,\n  \"translations\": [\n    {\n      \"language\": \"en\",\n      \"name\": \"Postman row\",\n      \"instructions\": [\n        \"Brace\",\n        \"Pull smoothly\"\n      ],\n      \"technique_notes\": \"\"\n    }\n  ],\n  \"muscles\": [\n    {\n      \"code\": \"back\",\n      \"role\": \"primary\"\n    }\n  ],\n  \"media\": []\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(201));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);",
+              "pm.collectionVariables.set(\"exercise_id\",body.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create prescribed folder",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{api_base}}/api/training/folders/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Postman pull\",\n  \"position\": 1,\n  \"entries\": [\n    {\n      \"id\": \"{{entry_id}}\",\n      \"exercise_id\": \"{{exercise_id}}\",\n      \"sets\": [\n        {\n          \"id\": \"{{set1}}\",\n          \"weight_kg\": \"20.000\",\n          \"reps\": 12\n        },\n        {\n          \"id\": \"{{set2}}\",\n          \"weight_kg\": \"22.000\",\n          \"reps\": 10\n        },\n        {\n          \"id\": \"{{set3}}\",\n          \"weight_kg\": \"22.000\",\n          \"reps\": 8\n        }\n      ]\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(201));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);",
+              "pm.collectionVariables.set(\"folder_id\",body.id);pm.test(\"Three independent prescriptions\",()=>pm.expect(body.entries[0].sets.map(s=>s.weight_kg)).to.eql([\"20.000\",\"22.000\",\"22.000\"]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create dated record",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{api_base}}/api/training/records/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"exercise_id\": \"{{exercise_id}}\",\n  \"folder_exercise_id\": \"{{entry_id}}\",\n  \"local_date\": \"2026-10-05\",\n  \"recorded_at\": \"2026-10-05T10:00:00Z\",\n  \"kind\": \"performed\",\n  \"notes\": \"Separate from prescription\",\n  \"sets\": [\n    {\n      \"id\": \"{{record_set}}\",\n      \"weight_kg\": \"24.000\",\n      \"reps\": 8\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(201));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);",
+              "pm.collectionVariables.set(\"record_id\",body.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create private tutorial annotation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{api_base}}/api/training/annotations/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"exercise_id\": \"{{exercise_id}}\",\n  \"tutorial_url\": \"https://example.com/tutorial\",\n  \"notes\": \"Owner only\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(201));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Download authorized folder manifest",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          }
+        ],
+        "url": "{{api_base}}/api/training/folders/{{folder_id}}/download/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(200));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);",
+              "pm.test(\"Instructions and annotation included\",()=>{pm.expect(body.exercises.length).to.eql(1);pm.expect(body.annotations.length).to.eql(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Paginated folders",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          }
+        ],
+        "url": "{{api_base}}/api/training/folders/?limit=1"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(200));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Atomic folder reorder",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{api_base}}/api/training/folders/reorder/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"revision\": 1,\n  \"folders\": [\n    {\n      \"id\": \"{{folder_id}}\",\n      \"revision\": 1\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(200));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reject stale folder correction",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{api_base}}/api/training/folders/{{folder_id}}/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Stale rename\",\n  \"position\": 1,\n  \"entries\": [\n    {\n      \"id\": \"{{entry_id}}\",\n      \"exercise_id\": \"{{exercise_id}}\",\n      \"sets\": [\n        {\n          \"id\": \"{{set1}}\",\n          \"weight_kg\": \"20.000\",\n          \"reps\": 12\n        },\n        {\n          \"id\": \"{{set2}}\",\n          \"weight_kg\": \"22.000\",\n          \"reps\": 10\n        },\n        {\n          \"id\": \"{{set3}}\",\n          \"weight_kg\": \"22.000\",\n          \"reps\": 8\n        }\n      ]\n    }\n  ],\n  \"revision\": 1\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(409));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Edit history without changing prescription",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{api_base}}/api/training/records/{{record_id}}/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"exercise_id\": \"{{exercise_id}}\",\n  \"folder_exercise_id\": \"{{entry_id}}\",\n  \"local_date\": \"2026-10-05\",\n  \"recorded_at\": \"2026-10-05T10:00:00Z\",\n  \"kind\": \"performed\",\n  \"notes\": \"Separate from prescription\",\n  \"sets\": [\n    {\n      \"id\": \"{{record_set}}\",\n      \"weight_kg\": \"30.000\",\n      \"reps\": 8\n    }\n  ],\n  \"revision\": 1\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(200));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Prescription unchanged",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          }
+        ],
+        "url": "{{api_base}}/api/training/folders/{{folder_id}}/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(200));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);",
+              "pm.test(\"Planned weight stays 20kg\",()=>pm.expect(body.entries[0].sets[0].weight_kg).to.eql(\"20.000\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reject non-HTTPS tutorial",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{api_base}}/api/training/annotations/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"exercise_id\": \"{{exercise_id}}\",\n  \"tutorial_url\": \"http://example.com\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(400));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete folder preserving history",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{api_base}}/api/training/folders/{{folder_id}}/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"revision\": 2\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(200));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "History retains sets, clears context",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          }
+        ],
+        "url": "{{api_base}}/api/training/records/{{record_id}}/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(200));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);",
+              "pm.test(\"History preserved\",()=>{pm.expect(body.folder_exercise_id).to.eql(null);pm.expect(body.sets[0].weight_kg).to.eql(\"30.000\");});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Owner logout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{api_base}}/api/auth/logout/",
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(200));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register unrelated account",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{api_base}}/api/auth/register/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"training-other-{{run_id}}@example.com\",\n  \"password\": \"Training-postman-test-password!\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(201));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Deny private exercise ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          }
+        ],
+        "url": "{{api_base}}/api/training/exercises/{{exercise_id}}/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(404));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Deny private history ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          }
+        ],
+        "url": "{{api_base}}/api/training/records/{{record_id}}/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(404));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Other owner has no history",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          }
+        ],
+        "url": "{{api_base}}/api/training/records/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(200));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);",
+              "pm.test(\"No records leaked\",()=>pm.expect(body.results).to.eql([]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Final logout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{api_base}}/api/auth/logout/",
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected status\", () => pm.response.to.have.status(200));",
+              "const body = pm.response.code === 204 ? {} : pm.response.json();",
+              "if (body.csrf_token) pm.collectionVariables.set(\"csrf_token\", body.csrf_token);"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
