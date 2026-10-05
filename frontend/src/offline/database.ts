@@ -210,6 +210,56 @@ export async function lockAccount(discard = false, logout = false) {
   await tx.done;
   changed();
 }
+
+export async function clearErasedAccount(owner: string) {
+  const database = await db;
+  const stores = [...database.objectStoreNames];
+  const tx = database.transaction(stores, "readwrite");
+  const removedOperations = new Set<string>();
+  const operationsStore = tx.objectStore("operations");
+  for (
+    const cursor = await operationsStore.openCursor();
+    cursor;
+    await cursor.continue()
+  ) {
+    if (cursor.value.owner === owner) {
+      removedOperations.add(cursor.value.idempotency_key);
+      await cursor.delete();
+    }
+  }
+  for (const storeName of stores) {
+    const store = tx.objectStore(storeName);
+    if (storeName === "operations") continue;
+    for (
+      let cursor = await store.openCursor();
+      cursor;
+      cursor = await cursor.continue()
+    ) {
+      const value = cursor.value as unknown;
+      const record =
+        value && typeof value === "object"
+          ? (value as Record<string, unknown>)
+          : null;
+      const ownerMatches =
+        record?.owner === owner ||
+        (record?.user &&
+          typeof record.user === "object" &&
+          (record.user as { id?: unknown }).id === owner);
+      const key = String(cursor.key);
+      const metaMatches =
+        storeName === "meta" &&
+        ((key === `active` && cursor.value === owner) ||
+          key === `cursor:${owner}` ||
+          key === `device:${owner}` ||
+          key === `photos-cache:${owner}` ||
+          [...removedOperations].some((id) => key === `photo-staged:${id}`) ||
+          key.startsWith(`photo:${owner}:`));
+      if (ownerMatches || metaMatches) await cursor.delete();
+    }
+  }
+  await tx.done;
+  window.dispatchEvent(new Event("trainfuel-local-change"));
+}
 export async function applyRemote(
   owner: string,
   rows: {

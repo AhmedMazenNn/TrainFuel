@@ -17,6 +17,14 @@ def required_env(name):
 
 SECRET_KEY = required_env("DJANGO_SECRET_KEY")
 DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true"
+if not DEBUG and os.environ.get("DJANGO_REQUIRE_HTTPS", "true").lower() == "true":
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_HSTS_SECONDS", "31536000"))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = False
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = "DENY"
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
@@ -33,6 +41,7 @@ INSTALLED_APPS = [
     "accounts",
     "sync",
     "media_assets",
+    "privacy",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -40,6 +49,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "config.middleware.OwnerWriteGateMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -100,6 +110,8 @@ USE_I18N = True
 USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_URL = "/static/"
+MEDIA_ROOT = BASE_DIR.parent / ".private-media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Neither alias exposes URLs; delivery goes through authorized application endpoints.

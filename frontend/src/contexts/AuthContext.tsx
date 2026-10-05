@@ -11,6 +11,7 @@ import { api, ApiError } from "../api/client";
 import type { Account } from "../types/accounts";
 import {
   cachedAccount,
+  clearErasedAccount,
   db,
   lockAccount,
   rememberAccount,
@@ -33,7 +34,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [unavailable, setUnavailable] = useState(false),
     [sessionValid, setSessionValid] = useState(false);
   const generation = useRef(0),
-    channel = useRef<BroadcastChannel | null>(null);
+    channel = useRef<BroadcastChannel | null>(null),
+    currentAccount = useRef<Account | null>(account);
   const { setLanguage } = useLanguage();
   const setLocalAccount = useCallback(
     (next: Account) => setRawAccount(next),
@@ -107,19 +109,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       reconnect = () => {
         void refresh();
       };
+    const erased = () => {
+      const owner = currentAccount.current?.user.id;
+      if (owner) void clearErasedAccount(owner);
+      currentAccount.current = null;
+      setRawAccount(null);
+      setSessionValid(false);
+      setUnavailable(false);
+      ++generation.current;
+      channel.current?.postMessage("session-changed");
+    };
+    currentAccount.current = account;
     window.addEventListener("trainfuel-session-expired", expire);
+    window.addEventListener("trainfuel-account-erased", erased);
     window.addEventListener("online", reconnect);
     return () => {
       generation.current++;
       channel.current?.close();
       channel.current = null;
       window.removeEventListener("trainfuel-session-expired", expire);
+      window.removeEventListener("trainfuel-account-erased", erased);
       window.removeEventListener("online", reconnect);
     };
   }, [refresh]);
   useEffect(() => {
     if (account?.profile.display_name) setLanguage(account.profile.language);
   }, [account?.profile.language, account?.profile.display_name, setLanguage]);
+  useEffect(() => {
+    currentAccount.current = account;
+  }, [account]);
   async function signOut(discard = false) {
     ++generation.current;
     await lockAccount(discard, true);

@@ -50,6 +50,9 @@ export function AppShell() {
           </NavLink>
           <NavLink to="/app/profile">{t("profile")}</NavLink>
           <NavLink to="/app/account">{t("account")}</NavLink>
+          <NavLink to="/app/privacy">
+            {language === "ar" ? "الخصوصية" : "Privacy"}
+          </NavLink>
           <NavLink to="/app/sync">{copy.details}</NavLink>
         </nav>
         <div className="header-actions">

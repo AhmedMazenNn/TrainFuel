@@ -1,0 +1,60 @@
+{
+  "info": {
+    "_postman_id": "31bc4c93-6e19-4fa2-b5b4-76f33b6b4ac4",
+    "name": "TrainFuel — Privacy lifecycle",
+    "description": "Uses the Postman cookie jar and CSRF token from a fresh signed-in session. Export jobs are safe to run repeatedly. Account deletion is deliberately guarded by an explicit environment confirmation.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000" },
+    { "key": "csrf_token", "value": "" },
+    { "key": "privacy_job_id", "value": "" },
+    { "key": "privacy_receipt", "value": "" },
+    { "key": "confirm_deletion", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "01 Export and check status",
+      "item": [
+        {
+          "name": "Bootstrap CSRF",
+          "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/auth/csrf/" },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('CSRF endpoint is ready', () => pm.response.to.have.status(200));", "pm.environment.set('csrf_token', pm.response.json().csrf_token);"] } }]
+        },
+        {
+          "name": "Request export without photos",
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "X-CSRFToken", "value": "{{csrf_token}}" }], "body": { "mode": "raw", "raw": "{\n  \"include_photos\": false\n}", "options": { "raw": { "language": "json" } } }, "url": "{{base_url}}/api/privacy/exports/" },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Export accepted', () => pm.response.to.have.status(202));", "const body = pm.response.json();", "pm.environment.set('privacy_job_id', body.job_id);", "pm.environment.set('privacy_receipt', body.receipt_token);"] } }]
+        },
+        {
+          "name": "Check status with receipt",
+          "request": { "method": "GET", "header": [{ "key": "X-Privacy-Receipt", "value": "{{privacy_receipt}}" }], "url": "{{base_url}}/api/privacy/jobs/{{privacy_job_id}}/" },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Receipt grants status access', () => pm.response.to.have.status(200));", "pm.test('Status is tracked', () => pm.expect(['pending', 'running', 'ready', 'failed', 'expired']).to.include(pm.response.json().status));", "if (pm.response.json().download_path) pm.environment.set('privacy_download_path', pm.response.json().download_path);"] } }]
+        },
+        {
+          "name": "Status without receipt is denied",
+          "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/privacy/jobs/{{privacy_job_id}}/" },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Receipt is required', () => pm.response.to.have.status(404));"] } }]
+        },
+        {
+          "name": "Download ready export (run after status is ready)",
+          "request": { "method": "GET", "header": [{ "key": "X-Privacy-Receipt", "value": "{{privacy_receipt}}" }], "url": "{{base_url}}{{privacy_download_path}}" },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Private export is downloaded', () => pm.response.to.have.status(200));", "pm.test('No shared caching', () => pm.expect(pm.response.headers.get('Cache-Control')).to.include('no-store'));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "02 Account deletion (irreversible, manual only)",
+      "item": [
+        {
+          "name": "Request account deletion",
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "X-CSRFToken", "value": "{{csrf_token}}" }], "body": { "mode": "raw", "raw": "{\n  \"confirmation_email\": \"{{account_email}}\",\n  \"password\": \"{{account_password}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{base_url}}/api/privacy/account-deletion/" },
+          "event": [
+            { "listen": "prerequest", "script": { "type": "text/javascript", "exec": ["if (pm.environment.get('confirm_deletion') !== 'DELETE') throw new Error('Set confirm_deletion to DELETE only for a disposable account. This permanently deletes the account.');"] } },
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Deletion accepted after explicit confirmation', () => pm.response.to.have.status(202));", "pm.environment.set('privacy_job_id', pm.response.json().job_id);", "pm.environment.set('privacy_receipt', pm.response.json().receipt_token);"] } }
+          ]
+        }
+      ]
+    }
+  ]
+}

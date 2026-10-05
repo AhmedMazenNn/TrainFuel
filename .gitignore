@@ -4,6 +4,7 @@
 *.postman_environment.local.json
 .env.*
 !.env.example
+!.env.production.example
 
 # Python
 .venv/

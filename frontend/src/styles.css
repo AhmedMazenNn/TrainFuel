@@ -725,6 +725,20 @@ p {
 .account-card .google-section {
   max-width: 300px;
 }
+.privacy-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 20px 0;
+  color: #354d3c;
+  font-size: 0.85rem;
+}
+.privacy-check input { accent-color: var(--green); margin-block-start: 4px; width: 18px; height: 18px; flex: 0 0 auto; }
+.privacy-check span { display: grid; gap: 5px; }
+.privacy-check small { color: var(--muted); line-height: 1.5; }
+.danger-card { border-color: #ecd8d1; }
+.button.danger { background: #923e30; color: white; }
+.privacy-receipt code { overflow-wrap: anywhere; }
 .privacy-note {
   display: flex;
   gap: 16px;

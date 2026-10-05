@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [private]
+  api:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    environment: { DJANGO_DEBUG: "false", DJANGO_REQUIRE_HTTPS: "true", POSTGRES_HOST: db, POSTGRES_PORT: "5432" }
+    volumes: [private_media:/app/.private-media, static_assets:/app/staticfiles]
+    depends_on:
+      db: { condition: service_healthy }
+    command: ["/bin/sh", "-c", "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind=0.0.0.0:8000 --workers=3 --timeout=60 --access-logfile=- --error-logfile=-"]
+    networks: [private]
+  privacy-worker:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    environment: { DJANGO_DEBUG: "false", DJANGO_REQUIRE_HTTPS: "true", POSTGRES_HOST: db, POSTGRES_PORT: "5432" }
+    volumes: [private_media:/app/.private-media]
+    command: ["python", "manage.py", "process_privacy_jobs", "--interval", "2"]
+    depends_on:
+      db: { condition: service_healthy }
+    networks: [private]
+  web:
+    build: ./frontend
+    restart: unless-stopped
+    ports: ["${WEB_PORT:-8080}:8080"]
+    volumes: [static_assets:/usr/share/nginx/html/static:ro]
+    depends_on: [api]
+    networks: [private]
+volumes:
+  postgres_data:
+  private_media:
+  static_assets:
+networks:
+  private:
+    driver: bridge
