@@ -17,6 +17,7 @@ import { WorkspacePage } from "./pages/WorkspacePage";
 import { AccountPage } from "./pages/AccountPage";
 import "./styles.css";
 import { SyncProvider } from "./sync/SyncContext";
+import { NutritionPage } from "./nutrition/NutritionPage";
 import { SyncPage } from "./pages/SyncPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { PrivacyReceiptPage } from "./pages/PrivacyReceiptPage";
@@ -115,6 +116,7 @@ export function App() {
                     <Route path="/app/profile" element={<ProfilePage />} />
                     <Route path="/app/account" element={<AccountPage />} />
                     <Route path="/app/privacy" element={<PrivacyPage />} />
+                    <Route path="/app/nutrition" element={<NutritionPage />} />
                     <Route path="/app/sync" element={<SyncPage />} />
                     <Route path="/app/training" element={<TrainingPage />} />
                   </Route>

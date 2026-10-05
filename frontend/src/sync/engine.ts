@@ -1,3 +1,4 @@
+import { acceptCanonicalDay } from "../nutrition/store";
 import { api, ApiError } from "../api/client";
 import {
   applyRemote,
@@ -13,6 +14,8 @@ interface Receipt {
   status: PendingOperation["status"] | "accepted";
   current: Record<string, unknown> | null;
   code?: string;
+  canonical_id?: string;
+  revision?: number;
 }
 export async function synchronize(owner: string) {
   const run = async () => {
@@ -49,7 +52,9 @@ export async function synchronize(owner: string) {
     if ((await database.get("meta", `cursor:${owner}`)) === undefined)
       await snapshot();
     const blocked = new Set<string>();
-    for (const op of await operations(owner)) {
+    for (const queued of await operations(owner)) {
+      const op = await database.get("operations", queued.idempotency_key);
+      if (!op) continue;
       const entity = `${op.entity_type}:${op.entity_id}`;
       if (op.status !== "pending") {
         blocked.add(entity);
@@ -73,6 +78,21 @@ export async function synchronize(owner: string) {
       await active();
       const receipt = result.results[0];
       if (receipt.status === "accepted") {
+        if (
+          receipt.canonical_id &&
+          receipt.current &&
+          op.entity_type === "nutrition_day"
+        ) {
+          await acceptCanonicalDay(
+            owner,
+            op.entity_id,
+            receipt.canonical_id,
+            receipt.current,
+            op.idempotency_key,
+            receipt.revision,
+          );
+          continue;
+        }
         await database.delete("operations", op.idempotency_key);
         if (receipt.current)
           await applyRemote(owner, [
